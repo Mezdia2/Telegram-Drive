@@ -270,14 +270,14 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="auth-glass p-8 rounded-3xl shadow-2xl w-full max-w-md"
+                className="auth-glass p-8 rounded-2xl w-full max-w-md"
             >
                 <div className="text-center mb-8">
-                    <div className="w-20 h-20 mb-6 mx-auto flex items-center justify-center filter drop-shadow-lg">
+                    <div className="w-16 h-16 mb-6 mx-auto flex items-center justify-center">
                         <img src="/logo.svg" alt="Logo" className="w-full h-full" />
                     </div>
-                    <h1 className="text-2xl font-bold text-white mb-1 tracking-tight">Telegram Drive</h1>
-                    <p className="text-sm text-white/60 font-medium">Self-Hosted Secure Storage</p>
+                    <h1 className="font-display text-4xl text-white mb-2">Telegram Drive</h1>
+                    <p className="text-sm text-white/60">Self-Hosted Secure Storage</p>
                 </div>
 
                 <AnimatePresence mode="wait">
@@ -328,7 +328,7 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
                                                     value={apiId}
                                                     onChange={(e) => setApiId(e.target.value)}
                                                     placeholder="12345678"
-                                                    className="w-full glass-input rounded-xl pl-12 pr-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-all font-mono text-sm"
+                                                    className="w-full glass-input rounded-xl pl-12 pr-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-telegram-text transition-all font-mono text-sm"
                                                 />
                                             </div>
                                         </div>
@@ -341,7 +341,7 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
                                                     value={apiHash}
                                                     onChange={(e) => setApiHash(e.target.value)}
                                                     placeholder="abcdef123456..."
-                                                    className="w-full glass-input rounded-xl pl-12 pr-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-all font-mono text-sm"
+                                                    className="w-full glass-input rounded-xl pl-12 pr-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-telegram-text transition-all font-mono text-sm"
                                                 />
                                             </div>
                                         </div>
@@ -349,7 +349,7 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
 
                                     <button
                                         type="submit"
-                                        className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]"
+                                        className="w-full bg-telegram-primary hover:bg-telegram-primary-hover font-medium py-3.5 rounded-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                                     >
                                         Configure <Settings className="w-4 h-4" />
                                     </button>
@@ -357,7 +357,7 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
                                     <button
                                         type="button"
                                         onClick={() => setShowHelp(true)}
-                                        className="w-full text-xs text-blue-300 hover:text-white transition-colors flex items-center justify-center gap-1.5 py-1"
+                                        className="w-full text-xs text-telegram-secondary hover:text-white transition-colors flex items-center justify-center gap-1.5 py-1"
                                     >
                                         <HelpCircle className="w-3 h-3" />
                                         How do I get my API credentials?
@@ -423,7 +423,7 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
                                                         value={phone}
                                                         onChange={(e) => setPhone(e.target.value)}
                                                         placeholder="+1 234 567 8900"
-                                                        className="w-full glass-input rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-all text-lg tracking-wide"
+                                                        className="w-full glass-input rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-telegram-text transition-all text-lg tracking-wide"
                                                     />
                                                 </div>
                                             </div>
@@ -432,7 +432,7 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
                                                 <button
                                                     type="submit"
                                                     disabled={loading}
-                                                    className="w-full bg-white text-black hover:bg-gray-100 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    className="w-full bg-telegram-primary hover:bg-telegram-primary-hover font-semibold py-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                                                 >
                                                     {loading ? "Connecting..." : <>Continue <ArrowRight className="w-5 h-5" /></>}
                                                 </button>
@@ -505,7 +505,7 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
                                                 value={code}
                                                 onChange={(e) => setCode(e.target.value)}
                                                 placeholder="1 2 3 4 5"
-                                                className="w-full glass-input rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-all text-2xl tracking-[0.5em] font-mono text-center"
+                                                className="w-full glass-input rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-telegram-text transition-all text-2xl tracking-[0.5em] font-mono text-center"
                                             />
                                         </div>
                                     </div>
@@ -514,7 +514,7 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
                                         <button
                                             type="submit"
                                             disabled={loading}
-                                            className="w-full bg-white text-black hover:bg-gray-100 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98]"
+                                            className="w-full bg-telegram-primary hover:bg-telegram-primary-hover font-semibold py-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98]"
                                         >
                                             {loading ? "Verifying..." : "Sign In"}
                                         </button>
@@ -550,7 +550,7 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
                                                 value={password}
                                                 onChange={(e) => setPassword(e.target.value)}
                                                 placeholder="Enter your password"
-                                                className="w-full glass-input rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-all text-lg"
+                                                className="w-full glass-input rounded-xl pl-12 pr-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-telegram-text transition-all text-lg"
                                                 autoFocus
                                             />
                                         </div>
@@ -560,7 +560,7 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
                                         <button
                                             type="submit"
                                             disabled={loading || !password}
-                                            className="w-full bg-white text-black hover:bg-gray-100 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full bg-telegram-primary hover:bg-telegram-primary-hover font-semibold py-4 rounded-lg flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             {loading ? "Verifying..." : "Unlock"}
                                         </button>
@@ -726,8 +726,8 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
                 )}
             </AnimatePresence>
 
-            <div className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none -z-10" />
-            <div className="fixed bottom-[-10%] right-[-10%] w-[400px] h-[400px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none -z-10" />
+            <div className="fixed top-[-20%] left-[-10%] w-[500px] h-[500px] glow-blue rounded-full pointer-events-none -z-10" />
+            <div className="fixed bottom-[-10%] right-[-10%] w-[400px] h-[400px] glow-white rounded-full pointer-events-none -z-10" />
         </div>
     );
 }

@@ -1,28 +1,57 @@
 @import "tailwindcss";
 
 /* stylelint-disable at-rule-no-unknown */
-/* Dark Theme (Default) - Using Tailwind v4 @theme directive */
 @theme {
-  --color-telegram-bg: #0e1621;
-  --color-telegram-surface: #17212b;
-  --color-telegram-primary: #ffae00;
-  --color-telegram-secondary: #2481cc;
-  --color-telegram-text: #ffffff;
-  --color-telegram-subtext: #8e9fb3;
-  --color-telegram-border: rgba(255, 255, 255, 0.1);
+  /* ---- Type lanes ------------------------------------------------------- */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Fraunces', 'Tiempos Headline', 'Söhne', Georgia, 'Times New Roman', serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', monospace;
+
+  /* ---- Surfaces (dark canvas) ------------------------------------------ */
+  --color-telegram-bg: #000000;          /* canvas — true black */
+  --color-telegram-surface: #0a0a0c;     /* surface-card */
+  --color-telegram-elevated: #101012;    /* surface-elevated */
+  --color-telegram-deep: #06060a;        /* code well — cooler & deeper */
+
+  /* ---- Brand (white is the accent) ------------------------------------- */
+  --color-telegram-primary: #fcfdff;       /* the brightest pixel — white CTA + ink accent */
+  --color-telegram-primary-hover: #f1f7fe; /* surface-light — pressed state */
+  --color-telegram-on-primary: #000000;    /* label colour on the white CTA */
+  --color-telegram-secondary: #3b9eff;     /* accent-blue / link */
+
+  /* ---- Text ------------------------------------------------------------- */
+  --color-telegram-text: #fcfdff;                    /* ink — faintly blue-cool */
+  --color-telegram-subtext: rgba(252, 253, 255, 0.70); /* charcoal */
+
+  /* ---- Lines / states --------------------------------------------------- */
+  --color-telegram-border: rgba(255, 255, 255, 0.10); /* hairline */
   --color-telegram-hover: rgba(255, 255, 255, 0.05);
+
+  /* ---- Atmospheric accents (glows / inline highlights only) ------------ */
+  --color-accent-orange: #ff801f;
+  --color-accent-yellow: #ffc53d;
+  --color-accent-blue: #3b9eff;
+  --color-accent-green: #11ff99;
+  --color-accent-red: #ff2047;
 }
 
-/* Light Theme Overrides */
+/* ---- Light theme: inverse-contrast (off-white island, black CTA) ------- */
 :root.light {
-  --color-telegram-bg: #f0f2f5;
+  --color-telegram-bg: #f1f7fe;          /* surface-light */
   --color-telegram-surface: #ffffff;
-  --color-telegram-primary: #e69500;
-  --color-telegram-secondary: #2481cc;
-  --color-telegram-text: #1a1a1a;
-  --color-telegram-subtext: #65676b;
-  --color-telegram-border: rgba(0, 0, 0, 0.1);
-  --color-telegram-hover: rgba(0, 0, 0, 0.03);
+  --color-telegram-elevated: #ffffff;
+  --color-telegram-deep: #0a0a0c;        /* code wells stay dark even in light */
+
+  --color-telegram-primary: #0a0a0c;       /* black CTA — the inverse anchor */
+  --color-telegram-primary-hover: #1c1c22;
+  --color-telegram-on-primary: #fcfdff;
+  --color-telegram-secondary: #0075ff;
+
+  --color-telegram-text: #000000;                 /* on-light */
+  --color-telegram-subtext: rgba(0, 0, 51, 0.70); /* on-light-mute */
+
+  --color-telegram-border: rgba(0, 0, 0, 0.12);
+  --color-telegram-hover: rgba(0, 0, 0, 0.04);
 }
 
 body,
@@ -32,64 +61,113 @@ body,
   width: 100vw;
   height: 100vh;
   overflow: hidden;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   background: var(--color-telegram-bg);
   color: var(--color-telegram-text);
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Auth screen gradient background */
+/* ----------------------------------------------------------------------------
+   Safety net: any element using the SOLID primary surface (the white CTA)
+   gets the correct contrasting label colour automatically. This is an
+   unlayered rule, so it overrides Tailwind's layered text-* utilities and
+   guarantees no white-on-white / black-on-black buttons across themes.
+   Opacity variants (bg-telegram-primary/10 etc.) generate a different class
+   and are intentionally NOT matched.
+   -------------------------------------------------------------------------- */
+.bg-telegram-primary {
+  color: var(--color-telegram-on-primary);
+}
+
+/* ----------------------------------------------------------------------------
+   Editorial type helpers
+   -------------------------------------------------------------------------- */
+.font-display {
+  font-family: var(--font-display);
+  font-feature-settings: "ss01", "liga";
+  line-height: 1.0;          /* Domaine packs tight — never loosen past 1.0 */
+  letter-spacing: -0.01em;
+  font-weight: 500;
+}
+
+code,
+kbd,
+pre,
+samp,
+.font-mono {
+  font-family: var(--font-mono);
+  font-feature-settings: normal;   /* code never carries ligatures */
+}
+
+/* ----------------------------------------------------------------------------
+   Atmospheric depth — low-opacity radial glows anchored at a section's top.
+   No drop shadows anywhere; hairlines + glows carry all elevation.
+   -------------------------------------------------------------------------- */
+.atmosphere {
+  position: relative;
+  isolation: isolate;
+}
+
+.glow-blue,
+.glow-orange,
+.glow-green,
+.glow-red,
+.glow-white {
+  position: absolute;
+  pointer-events: none;
+  z-index: -1;
+  border-radius: 9999px;
+  filter: blur(120px);
+}
+
+.glow-blue { background: radial-gradient(circle, rgba(0, 117, 255, 0.34) 0%, transparent 70%); }
+.glow-orange { background: radial-gradient(circle, rgba(255, 89, 0, 0.22) 0%, transparent 70%); }
+.glow-green { background: radial-gradient(circle, rgba(34, 255, 153, 0.18) 0%, transparent 70%); }
+.glow-red { background: radial-gradient(circle, rgba(255, 32, 71, 0.34) 0%, transparent 70%); }
+.glow-white { background: radial-gradient(circle, rgba(252, 253, 255, 0.10) 0%, transparent 70%); }
+
+/* Auth screen canvas — pure black (light: off-white island). The brand never
+   warms to a colour gradient; depth comes from the atmospheric glow instead. */
 .auth-gradient {
-  background: radial-gradient(120% 120% at 0% 0%, #3ca5ff 0%, #007aff 100%);
+  background: var(--color-telegram-bg);
 }
 
-:root.light .auth-gradient {
-  background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
-}
-
-/* Glassmorphism Utilities - Dark */
+/* ----------------------------------------------------------------------------
+   Surfaces — translucent-white hairline cards (NOT frosted glass). The dark
+   canvas absorbs shadow, so depth is luminance + a single 1px hairline.
+   -------------------------------------------------------------------------- */
 .glass {
-  background: rgba(23, 33, 43, 0.7);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--color-telegram-surface);
+  border: 1px solid var(--color-telegram-border);
 }
 
-:root.light .glass {
-  background: rgba(255, 255, 255, 0.85);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-}
-
-/* Auth-specific glass - works on gradient backgrounds in both themes */
 .auth-glass {
-  background: rgba(23, 33, 43, 0.85);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--color-telegram-surface);
+  border: 1px solid var(--color-telegram-border);
 }
 
 :root.light .auth-glass {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: #1a1a1a;
+  color: #000000;
 }
 
-/* Force dark text inside auth-glass in light mode */
+/* Keep auth-card text legible on the white light-mode island */
 :root.light .auth-glass .text-white {
-  color: #1a1a1a;
+  color: #000000;
 }
 
 :root.light .auth-glass .text-white\/60 {
-  color: rgba(26, 26, 26, 0.7);
+  color: rgba(0, 0, 51, 0.7);
 }
 
 :root.light .auth-glass .text-gray-400 {
-  color: #555;
+  color: rgba(0, 0, 51, 0.55);
 }
 
-:root.light .auth-glass .text-blue-200 {
-  color: #1e40af;
+:root.light .auth-glass .text-blue-200,
+:root.light .auth-glass .text-blue-300 {
+  color: #0075ff;
 }
 
 :root.light .auth-glass .placeholder-gray-600::placeholder {
@@ -97,38 +175,31 @@ body,
 }
 
 :root.light .auth-glass input {
-  background: rgba(0, 0, 0, 0.05);
-  border-color: rgba(0, 0, 0, 0.15);
-  color: #1a1a1a;
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #000000;
 }
 
-/* Auth form icons - Direct overrides for maximum visibility */
+/* Auth form icons */
 .auth-form-icon {
-  color: #ffffff !important;
-  /* Default (Dark Mode): Pure White */
-  opacity: 1 !important;
+  color: var(--color-telegram-text) !important;
+  opacity: 0.55 !important;
   z-index: 20;
 }
 
-/* Light Mode Override */
-:root.light .auth-form-icon {
-  color: #000000 !important;
-  /* Light Mode: Pure Black */
-  opacity: 0.8 !important;
-}
-
 .glass-input {
-  background: rgba(14, 22, 33, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
+  background: var(--color-telegram-deep);
+  border: 1px solid var(--color-telegram-border);
 }
 
 :root.light .glass-input {
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-/* Custom Scrollbar - Dark */
+/* ----------------------------------------------------------------------------
+   Scrollbar — hairline thumb, brand-blue on hover
+   -------------------------------------------------------------------------- */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -139,24 +210,30 @@ body,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.10);
   border-radius: 99px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(36, 129, 204, 0.6);
+  background: var(--color-accent-blue);
 }
 
-/* Custom Scrollbar - Light */
 :root.light ::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.15);
 }
 
 :root.light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(36, 129, 204, 0.5);
+  background: var(--color-accent-blue);
 }
 
-/* Progress Animation */
+/* Text selection — white wash on black */
+::selection {
+  background: rgba(252, 253, 255, 0.18);
+}
+
+/* ----------------------------------------------------------------------------
+   Progress animation
+   -------------------------------------------------------------------------- */
 @keyframes progress-indeterminate {
   0% {
     transform: translateX(-100%);
@@ -175,7 +252,9 @@ body,
   animation: progress-indeterminate 1.5s infinite linear;
 }
 
-/* Light mode specific overrides for common patterns */
+/* ----------------------------------------------------------------------------
+   Light-mode helpers for the common translucent-white patterns
+   -------------------------------------------------------------------------- */
 :root.light .bg-telegram-bg {
   background-color: var(--color-telegram-bg);
 }
@@ -205,7 +284,7 @@ body,
   background-color: rgba(0, 0, 0, 0.08);
 }
 
-/* File card action buttons - more visible in light mode */
+/* File card action buttons — legible in light mode */
 :root.light .file-action-btn {
   background-color: rgba(0, 0, 0, 0.6) !important;
   color: white !important;
@@ -213,9 +292,9 @@ body,
 
 :root.light .file-action-btn:hover {
   background-color: var(--color-telegram-primary) !important;
+  color: var(--color-telegram-on-primary) !important;
 }
 
-/* Invert text colors for light mode where needed */
 :root.light .text-telegram-text {
   color: var(--color-telegram-text);
 }
@@ -224,17 +303,24 @@ body,
   color: var(--color-telegram-subtext);
 }
 
-/* Card shadows for light mode */
+/* The system has no drop-shadow language — flatten heavy shadows to a faint
+   hairline-equivalent so nothing reads as a raised glassy card. */
+.shadow-lg,
+.shadow-xl,
+.shadow-2xl {
+  --tw-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
 :root.light .shadow-2xl {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
 }
 
-/* Input styling for light mode */
+/* Input styling */
 :root.light input,
 :root.light textarea {
   background-color: #ffffff;
-  border-color: rgba(0, 0, 0, 0.15);
-  color: #1a1a1a;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #000000;
 }
 
 :root.light input::placeholder,
@@ -242,15 +328,15 @@ body,
   color: #9ca3af;
 }
 
-:root.light input:focus,
-:root.light textarea:focus {
-  border-color: var(--color-telegram-primary);
+input:focus,
+textarea:focus {
+  border-color: var(--color-telegram-text);
 }
 
-/* ── Performance Mode ──────────────────────────────────────── */
-/* Disables GPU-heavy effects for WebKitGTK / older hardware.  */
-/* Toggle via Settings → General → Performance Mode.           */
-
+/* ----------------------------------------------------------------------------
+   Performance Mode — disables GPU-heavy effects for WebKitGTK / old hardware.
+   Toggle via Settings → General → Performance Mode.
+   -------------------------------------------------------------------------- */
 .performance-mode *,
 .performance-mode *::before,
 .performance-mode *::after {
@@ -259,7 +345,6 @@ body,
 }
 
 .performance-mode {
-  /* Kill backdrop-filter completely */
   --tw-backdrop-blur: none !important;
 }
 
@@ -281,16 +366,23 @@ body,
   -webkit-backdrop-filter: none !important;
 }
 
-/* Kill heavy shadows */
+.performance-mode .glow-blue,
+.performance-mode .glow-orange,
+.performance-mode .glow-green,
+.performance-mode .glow-red,
+.performance-mode .glow-white {
+  filter: none !important;
+  opacity: 0.35;
+}
+
 .performance-mode .shadow-lg,
 .performance-mode .shadow-xl,
 .performance-mode .shadow-2xl,
 .performance-mode .drop-shadow-lg {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06) !important;
   filter: none !important;
 }
 
-/* Reduce paint cost */
 .performance-mode .animate-pulse,
 .performance-mode .animate-spin {
   animation: none !important;

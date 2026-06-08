@@ -43,7 +43,7 @@ export function Sidebar({
         <aside className="w-64 bg-telegram-surface border-r border-telegram-border flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="p-4 flex items-center gap-2">
                 <img src="/logo.svg" className="w-8 h-8 drop-shadow-lg" alt="Logo" />
-                <span className="font-bold text-lg text-telegram-text tracking-tight">Telegram Drive</span>
+                <span className="font-display text-xl text-telegram-text">Telegram Drive</span>
             </div>
 
             {/* Scrollable folder list */}
