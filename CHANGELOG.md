@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.8.72] - 2026-06-10
+
+### UI Redesign, Proxy Controls & CI Fix
+
+- **Collapsible Sidebar**
+  - Redesigned the desktop sidebar to collapse into a compact icon-only rail or expand to the full labelled view.
+  - Defaults to collapsed; collapsed items show hover tooltips and a public-folder badge dot, and the collapse state persists across sessions.
+  - Navigation, drag-to-folder, and folder context menus remain fully usable in both states.
+- **Modernized Title Bar**
+  - Refined the top bar into a cleaner, more minimal desktop-app header with a chevron breadcrumb, inline search field, and a unified icon-button cluster with consistent tooltips.
+- **Proxy / VPN Controls**
+  - Added HTTP and HTTPS proxy support alongside SOCKS5. Because the Telegram transport only dials SOCKS5 natively, HTTP/HTTPS traffic is tunneled through an in-process local SOCKS5 bridge using the `CONNECT` method (with optional TLS to the proxy and username/password auth).
+  - Added a compact, Telegram-style proxy quick-control in the top-right corner showing live connection state (connected / connecting / disconnected) with a one-tap enable/disable toggle, a "Check connection" action, and a shortcut into full proxy settings.
+  - Proxy settings now offer SOCKS5/HTTP/HTTPS with auth fields for each type and deep-link directly to the proxy tab.
+
+### Build & CI
+
+- **macOS DMG Bundling Fix**
+  - Pinned the macOS release runners to `macos-15` to resolve `bundle_dmg.sh` failures caused by a `macos-14` runner-image regression (Finder AppleEvent timeout during DMG creation). See actions/runner-images#12482.
+  - Explicitly set `CI=true` for the build step so the bundler skips the Finder-prettifying AppleScript that times out on CI runners.
+
+---
+
 ## [1.8.7] - 2026-06-09
 
 ### Bug Fixes & Windows Enhancements
