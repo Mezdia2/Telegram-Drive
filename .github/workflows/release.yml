@@ -90,12 +90,15 @@ jobs:
             target: ''
             
           # macOS Intel
-          - platform: macos-latest
+          # Pinned to macos-15: the macos-14 runner image regressed DMG
+          # bundling (Finder AppleEvent timeout in bundle_dmg.sh).
+          # See actions/runner-images#12482.
+          - platform: macos-15
             args: '--target x86_64-apple-darwin'
             target: 'x86_64-apple-darwin'
-          
+
           # macOS Apple Silicon
-          - platform: macos-latest
+          - platform: macos-15
             args: '--target aarch64-apple-darwin'
             target: 'aarch64-apple-darwin'
 
@@ -136,6 +139,10 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Ensure Tauri passes --skip-jenkins to bundle_dmg.sh so the
+          # Finder-prettifying AppleScript (which times out on CI runners)
+          # is skipped during DMG creation.
+          CI: true
         with:
           releaseId: ${{ needs.create-release.outputs.release_id }}
           projectPath: ./app
