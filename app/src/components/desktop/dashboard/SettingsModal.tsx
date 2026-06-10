@@ -11,9 +11,12 @@ import { useConfirm } from '../../../context/ConfirmContext';
 import { ShareInfo, CacheEntry, DetailedCacheInfo } from '../../../types';
 import { version as appVersion } from '../../../../package.json';
 
+type SettingsTab = 'general' | 'proxy' | 'vpn' | 'sharing' | 'about';
+
 interface SettingsModalProps {
     isOpen: boolean;
     onClose: () => void;
+    initialTab?: SettingsTab;
 }
 
 interface ApiSettings {
@@ -23,9 +26,7 @@ interface ApiSettings {
     running: boolean;
 }
 
-type SettingsTab = 'general' | 'proxy' | 'vpn' | 'sharing' | 'about';
-
-export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProps) {
     const { settings, updateSetting, resetSettings } = useSettings();
     const { confirm } = useConfirm();
     const [clearing, setClearing] = useState(false);
@@ -197,6 +198,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             setCacheLoading(false);
         }
     }, []);
+
+    // Jump to the requested tab each time the modal opens
+    useEffect(() => {
+        if (isOpen && initialTab) {
+            setActiveTab(initialTab);
+        }
+    }, [isOpen, initialTab]);
 
     // Load transcode cache when on general tab
     useEffect(() => {
@@ -930,15 +938,17 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                 <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
                                     <div>
                                         <p className="text-sm text-telegram-text font-medium">Proxy Type</p>
-                                        <p className="text-xs text-telegram-subtext">SOCKS5 proxy (MTProto not supported by grammers)</p>
+                                        <p className="text-xs text-telegram-subtext">SOCKS5, HTTP, or HTTPS</p>
                                     </div>
                                     <div className="relative">
                                         <select
                                             value={settings.proxyType}
-                                            onChange={e => updateSetting('proxyType', e.target.value as 'socks5')}
+                                            onChange={e => updateSetting('proxyType', e.target.value as 'socks5' | 'http' | 'https')}
                                             className="appearance-none bg-telegram-bg border border-telegram-border rounded-md pl-3 pr-8 py-1.5 text-sm text-telegram-text focus:outline-none focus:border-telegram-primary/50 transition cursor-pointer"
                                         >
                                             <option value="socks5">SOCKS5</option>
+                                            <option value="http">HTTP</option>
+                                            <option value="https">HTTPS</option>
                                         </select>
                                         <ChevronDown className="w-4 h-4 text-telegram-subtext absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                                     </div>
@@ -975,37 +985,33 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                     />
                                 </div>
 
-                                {/* SOCKS5 auth fields */}
-                                {settings.proxyType === 'socks5' && (
-                                    <>
-                                        <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
-                                            <div>
-                                                <p className="text-sm text-telegram-text font-medium">Username</p>
-                                                <p className="text-xs text-telegram-subtext">Optional</p>
-                                            </div>
-                                            <input
-                                                type="text"
-                                                placeholder="Optional"
-                                                value={settings.proxyUsername}
-                                                onChange={e => updateSetting('proxyUsername', e.target.value)}
-                                                className="w-40 bg-telegram-bg border border-telegram-border rounded-md px-2 py-1 text-sm text-telegram-text text-right focus:outline-none focus:border-telegram-primary/50 transition placeholder:text-telegram-subtext/40"
-                                            />
-                                        </div>
-                                        <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
-                                            <div>
-                                                <p className="text-sm text-telegram-text font-medium">Password</p>
-                                                <p className="text-xs text-telegram-subtext">Optional</p>
-                                            </div>
-                                            <input
-                                                type="password"
-                                                placeholder="Optional"
-                                                value={settings.proxyPassword}
-                                                onChange={e => updateSetting('proxyPassword', e.target.value)}
-                                                className="w-40 bg-telegram-bg border border-telegram-border rounded-md px-2 py-1 text-sm text-telegram-text text-right focus:outline-none focus:border-telegram-primary/50 transition placeholder:text-telegram-subtext/40"
-                                            />
-                                        </div>
-                                    </>
-                                )}
+                                {/* Auth fields (optional, used for all proxy types) */}
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
+                                    <div>
+                                        <p className="text-sm text-telegram-text font-medium">Username</p>
+                                        <p className="text-xs text-telegram-subtext">Optional</p>
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Optional"
+                                        value={settings.proxyUsername}
+                                        onChange={e => updateSetting('proxyUsername', e.target.value)}
+                                        className="w-40 bg-telegram-bg border border-telegram-border rounded-md px-2 py-1 text-sm text-telegram-text text-right focus:outline-none focus:border-telegram-primary/50 transition placeholder:text-telegram-subtext/40"
+                                    />
+                                </div>
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
+                                    <div>
+                                        <p className="text-sm text-telegram-text font-medium">Password</p>
+                                        <p className="text-xs text-telegram-subtext">Optional</p>
+                                    </div>
+                                    <input
+                                        type="password"
+                                        placeholder="Optional"
+                                        value={settings.proxyPassword}
+                                        onChange={e => updateSetting('proxyPassword', e.target.value)}
+                                        className="w-40 bg-telegram-bg border border-telegram-border rounded-md px-2 py-1 text-sm text-telegram-text text-right focus:outline-none focus:border-telegram-primary/50 transition placeholder:text-telegram-subtext/40"
+                                    />
+                                </div>
 
                                 {/* Info note */}
                                 <div className="p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/10 space-y-2">
@@ -1017,6 +1023,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                                             setReconnecting(true);
                                             try {
                                                 const ok = await invoke<boolean>('cmd_reconnect_with_network_settings');
+                                                invoke('cmd_probe_proxy').catch(() => {});
                                                 if (ok) {
                                                     toast.success('Reconnected successfully with new proxy settings');
                                                 } else {
