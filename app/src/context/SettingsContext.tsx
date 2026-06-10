@@ -3,6 +3,7 @@ import { load } from '@tauri-apps/plugin-store';
 
 export interface Settings {
     viewMode: 'grid' | 'list';
+    sidebarCollapsed: boolean;
     autoUpdate: boolean;
     maxConcurrentUploads: number;
     maxConcurrentDownloads: number;
@@ -10,7 +11,7 @@ export interface Settings {
 
     // ── Proxy ──────────────────────────────────────────────
     proxyEnabled: boolean;
-    proxyType: 'socks5';  // Only SOCKS5 is supported by grammers
+    proxyType: 'socks5' | 'http' | 'https';
     proxyHost: string;
     proxyPort: number;
     proxyUsername: string;
@@ -47,6 +48,7 @@ export interface Settings {
 
 const defaultSettings: Settings = {
     viewMode: 'grid',
+    sidebarCollapsed: true,
     autoUpdate: true,
     maxConcurrentUploads: 6,
     maxConcurrentDownloads: 6,

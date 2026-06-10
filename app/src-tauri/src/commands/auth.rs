@@ -122,27 +122,52 @@ pub async fn ensure_client_initialized(
     }
 
     let mut connection_params = grammers_mtsender::ConnectionParams::default();
-    let proxy = net_config.proxy.read().unwrap();
+    let proxy = net_config.proxy.read().unwrap().clone();
+    let bridge = app_handle.state::<Arc<crate::proxy_bridge::ProxyBridgeState>>();
     if proxy.enabled && !proxy.host.is_empty() {
-        if proxy.proxy_type == "socks5" {
-            let url = if !proxy.username.is_empty() {
-                let encoded_user = urlencoding::encode(&proxy.username);
-                let encoded_pass = urlencoding::encode(&proxy.password);
-                format!(
-                    "socks5://{}:{}@{}:{}",
-                    encoded_user, encoded_pass, proxy.host, proxy.port
-                )
-            } else {
-                format!("socks5://{}:{}", proxy.host, proxy.port)
-            };
-            log::info!("Using SOCKS5 proxy: socks5://{}:{}", proxy.host, proxy.port);
-            connection_params.proxy_url = Some(url);
-        } else {
-            log::warn!(
-                "Unsupported proxy type: {}. grammers only supports SOCKS5 proxy.",
-                proxy.proxy_type
-            );
+        match proxy.proxy_type.as_str() {
+            "socks5" => {
+                // grammers speaks SOCKS5 natively.
+                bridge.stop();
+                let url = if !proxy.username.is_empty() {
+                    let encoded_user = urlencoding::encode(&proxy.username);
+                    let encoded_pass = urlencoding::encode(&proxy.password);
+                    format!(
+                        "socks5://{}:{}@{}:{}",
+                        encoded_user, encoded_pass, proxy.host, proxy.port
+                    )
+                } else {
+                    format!("socks5://{}:{}", proxy.host, proxy.port)
+                };
+                log::info!("Using SOCKS5 proxy: socks5://{}:{}", proxy.host, proxy.port);
+                bridge.set_status(crate::proxy_bridge::ProxyStatus::Connecting);
+                connection_params.proxy_url = Some(url);
+            }
+            "http" | "https" => {
+                // grammers cannot dial HTTP(S) proxies, so route it through a
+                // local SOCKS5 bridge that tunnels via the CONNECT method.
+                match bridge.ensure_started(&proxy).await {
+                    Ok(port) => {
+                        log::info!(
+                            "Using {} proxy {}:{} via local bridge 127.0.0.1:{}",
+                            proxy.proxy_type, proxy.host, proxy.port, port
+                        );
+                        connection_params.proxy_url =
+                            Some(format!("socks5://127.0.0.1:{}", port));
+                    }
+                    Err(e) => {
+                        log::error!("Failed to start proxy bridge: {}", e);
+                        bridge.set_status(crate::proxy_bridge::ProxyStatus::Error);
+                    }
+                }
+            }
+            other => {
+                log::warn!("Unsupported proxy type: {}", other);
+            }
         }
+    } else {
+        bridge.stop();
+        bridge.set_status(crate::proxy_bridge::ProxyStatus::Disabled);
     }
 
     let session = Arc::new(session);
