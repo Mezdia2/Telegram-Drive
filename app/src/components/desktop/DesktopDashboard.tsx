@@ -50,6 +50,7 @@ export function Dashboard({ onLogout }: { onLogout: () => void }) {
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [showMoveModal, setShowMoveModal] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
+    const [settingsTab, setSettingsTab] = useState<'general' | 'proxy' | 'vpn' | 'sharing' | 'about' | undefined>(undefined);
     const [searchTerm, setSearchTerm] = useState("");
     const [searchResults, setSearchResults] = useState<TelegramFile[]>([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -505,7 +506,8 @@ export function Dashboard({ onLogout }: { onLogout: () => void }) {
                     setViewMode={setViewMode}
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
-                    onSettingsClick={() => setShowSettings(true)}
+                    onSettingsClick={() => { setSettingsTab('general'); setShowSettings(true); }}
+                    onProxySettings={() => { setSettingsTab('proxy'); setShowSettings(true); }}
                 />
                 {searchTerm.length > 2 && (
                     <div className="px-6 pt-4 pb-0">
@@ -572,6 +574,7 @@ export function Dashboard({ onLogout }: { onLogout: () => void }) {
             <SettingsModal
                 isOpen={showSettings}
                 onClose={() => setShowSettings(false)}
+                initialTab={settingsTab}
             />
 
             {shareFile && (
