@@ -41,6 +41,7 @@ fn init_com_on_worker_thread() {
 pub mod commands;
 pub mod bandwidth;
 pub mod vpn_optimizer;
+pub mod proxy_bridge;
 
 use tauri::Manager;
 
@@ -549,6 +550,7 @@ pub fn run() {
             let loaded_config = vpn_optimizer::load_network_config(app.handle());
             let net_config = Arc::new(vpn_optimizer::NetworkConfig::new_with_config(loaded_config));
             app.manage(net_config.clone());
+            app.manage(Arc::new(proxy_bridge::ProxyBridgeState::new()));
             
             // Initialize SQLite Database
             let db_pool = db::init_db(app.handle()).map_err(|e| {
@@ -674,6 +676,8 @@ pub fn run() {
             commands::cmd_get_network_config,
             commands::cmd_check_latency,
             commands::cmd_detect_vpn,
+            commands::cmd_get_proxy_status,
+            commands::cmd_probe_proxy,
             commands::cmd_create_share,
             commands::cmd_list_shares,
             commands::cmd_revoke_share,

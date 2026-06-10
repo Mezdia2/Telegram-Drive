@@ -1,8 +1,10 @@
 //! Tauri commands for applying proxy and VPN optimizer settings.
 //! These are called from the frontend when the user changes network configuration.
 
+use std::sync::Arc;
 use tauri::State;
 use crate::vpn_optimizer::{NetworkConfig, ProxyConfig, VpnConfig, NetworkConfigSnapshot};
+use crate::proxy_bridge::{ProxyBridgeState, ProxyStatus};
 
 #[derive(Debug, serde::Deserialize)]
 pub struct ProxySettingsRequest {
@@ -20,6 +22,7 @@ pub struct ProxySettingsRequest {
 pub async fn cmd_apply_proxy_settings(
     req: ProxySettingsRequest,
     net_config: State<'_, std::sync::Arc<NetworkConfig>>,
+    bridge: State<'_, Arc<ProxyBridgeState>>,
     app: tauri::AppHandle,
 ) -> Result<String, String> {
     let config = ProxyConfig {
@@ -35,6 +38,15 @@ pub async fn cmd_apply_proxy_settings(
         "Applying proxy settings: enabled={}, type={}, host={}:{}",
         config.enabled, config.proxy_type, config.host, config.port
     );
+
+    // Reflect intent in the live status immediately; an actual reconnect/probe
+    // will move it to connected/error.
+    if !config.enabled || config.host.is_empty() {
+        bridge.stop();
+        bridge.set_status(ProxyStatus::Disabled);
+    } else {
+        bridge.set_status(ProxyStatus::Connecting);
+    }
 
     *net_config.proxy.write().map_err(|e| e.to_string())? = config;
 

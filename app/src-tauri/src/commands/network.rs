@@ -1,7 +1,59 @@
 use std::net::TcpStream;
+use std::sync::Arc;
 use std::time::Duration;
 use tauri::State;
 use crate::vpn_optimizer::NetworkConfig;
+use crate::proxy_bridge::{ProxyBridgeState, ProxyStatus};
+
+/// Telegram DC used as the live proxy reachability probe target.
+const PROBE_HOST: &str = "149.154.167.50";
+const PROBE_PORT: u16 = 443;
+
+/// Return the last-known live proxy connection state for the UI.
+/// One of: "disabled" | "connecting" | "connected" | "error".
+#[tauri::command]
+pub async fn cmd_get_proxy_status(
+    bridge: State<'_, Arc<ProxyBridgeState>>,
+) -> Result<String, String> {
+    Ok(bridge.status_str())
+}
+
+/// Actively probe whether the configured proxy can reach Telegram and update
+/// the live status. Works for socks5/http/https. Returns the resulting state.
+#[tauri::command]
+pub async fn cmd_probe_proxy(
+    net_config: State<'_, Arc<NetworkConfig>>,
+    bridge: State<'_, Arc<ProxyBridgeState>>,
+) -> Result<String, String> {
+    let proxy = net_config.proxy.read().map_err(|e| e.to_string())?.clone();
+
+    if !proxy.enabled || proxy.host.is_empty() {
+        bridge.set_status(ProxyStatus::Disabled);
+        return Ok(ProxyStatus::Disabled.as_str().to_string());
+    }
+
+    bridge.set_status(ProxyStatus::Connecting);
+
+    let probe = tokio::time::timeout(
+        Duration::from_secs(8),
+        crate::proxy_bridge::tunnel_connect(&proxy, PROBE_HOST, PROBE_PORT),
+    )
+    .await;
+
+    let status = match probe {
+        Ok(Ok(_stream)) => ProxyStatus::Connected,
+        Ok(Err(e)) => {
+            log::warn!("Proxy probe failed: {}", e);
+            ProxyStatus::Error
+        }
+        Err(_) => {
+            log::warn!("Proxy probe timed out");
+            ProxyStatus::Error
+        }
+    };
+    bridge.set_status(status);
+    Ok(status.as_str().to_string())
+}
 
 /// Test whether Telegram MTProto traffic can pass through the configured proxy.
 /// Unlike cmd_is_network_available (which only TCP-pings the proxy host:port),
