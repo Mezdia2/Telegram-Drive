@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.8.72] - 2026-06-10
+## [Unreleased]
 
 ### UI Redesign, Proxy Controls & CI Fix
 
@@ -20,6 +20,58 @@
 - **macOS DMG Bundling Fix**
   - Pinned the macOS release runners to `macos-15` to resolve `bundle_dmg.sh` failures caused by a `macos-14` runner-image regression (Finder AppleEvent timeout during DMG creation). See actions/runner-images#12482.
   - Explicitly set `CI=true` for the build step so the bundler skips the Finder-prettifying AppleScript that times out on CI runners.
+
+---
+
+## [1.9.1] - 2026-06-20
+
+### Localization & Internationalisation
+
+- **Comprehensive Multi-Language Support**
+  - Extended full translation coverage to all modal titles, tab headers, button labels, and input placeholders across both Desktop and Mobile interfaces.
+  - Localized the Settings modal title and all five tab headers (General, Proxy, VPN, Sharing, About) across all thirteen supported languages: English, Spanish, Russian, Simplified Chinese, French, Arabic, Brazilian Portuguese, German, Hindi, Indonesian, Turkish, Japanese, and Korean.
+  - Translated modal titles and interactive elements for the Rename Folder, Rename File, Move to Folder, and Remote Upload dialogs on Desktop.
+  - Translated the mobile Rename Folder bottom sheet title, description prompt, input placeholder, and action buttons.
+  - Translated the mobile bottom navigation bar tab labels (Files, Transfers, Settings) dynamically via the active language setting.
+  - All translated strings correctly respond to language selection changes at runtime without requiring an application restart.
+
+---
+
+## [1.9.0] - 2026-06-16
+
+### Features & Bug Fixes
+
+- **Expanded REST API Interface**
+  - Upgraded the REST API server to a fully functional programmatic Cloud Drive interface.
+  - Implemented secure API key authentication and endpoints for file upload (via multipart forms), renaming, moving, copying, and deletion.
+  - Added folder CRUD endpoints to manage Telegram channels programmatically.
+  - Added endpoints for storage statistics, duplicate detection, empty folder discovery, and media metadata inspection.
+  - Implemented a streaming ZIP archive generation endpoint for downloading bulk files.
+
+- **Built-in Archive Viewer & Extractor**
+  - Added support for viewing the contents of ZIP, RAR, and 7Z archives directly inside the application.
+  - Implemented archive extraction capabilities to extract files to local storage or re-upload them.
+
+- **Drag and Drop Interface**
+  - Integrated drag-and-drop mechanics inside the file explorer to move files between folder views dynamically.
+
+- **Context Menu Alignment**
+  - Refined context menu positioning, boundaries, and quick-action menu options.
+
+- **Thumbnail Resolution & Scoping**
+  - Fixed duplicate thumbnail displays by scoping cache lookups and storage directories under folder-specific keys.
+
+---
+
+## [1.8.8] - 2026-06-12
+
+### Features & Caching Polish
+
+- **Enterprise-Grade Remote Upload**
+  - Integrated dual-phase remote file upload from direct HTTP/HTTPS URLs.
+  - Added frontend dialog `RemoteUploadModal` for URL input and destination folder selection.
+  - Implemented backend download cache manager (`cmd_upload_from_url`) with disk space pre-flight checks, resumable downloads using HTTP `Range` headers, SOCKS5/MTProto proxy routing config, oneshot cancellation tracking, and bandwidth throttling.
+  - Integrated dual-phase progress states and progress bars in `UploadQueue` UI.
 
 ---
 

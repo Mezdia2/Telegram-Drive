@@ -2,15 +2,14 @@ import { useState, useRef, useEffect } from 'react';
 import { Pencil, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-interface RenameFolderModalProps {
-    folderId: number;
-    currentName: string;
-    onRename: (folderId: number, oldName: string, newName: string) => Promise<void>;
+interface RenameFileModalProps {
+    fileName: string;
+    onRename: (newName: string) => Promise<void>;
     onClose: () => void;
 }
 
-export function RenameFolderModal({ folderId, currentName, onRename, onClose }: RenameFolderModalProps) {
-    const [name, setName] = useState(currentName);
+export function RenameFileModal({ fileName, onRename, onClose }: RenameFileModalProps) {
+    const [name, setName] = useState(fileName);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
     const { t } = useTranslation();
@@ -23,16 +22,15 @@ export function RenameFolderModal({ folderId, currentName, onRename, onClose }: 
     const handleSubmit = async () => {
         if (isSubmitting) return;
         const trimmed = name.trim();
-        if (!trimmed || trimmed === currentName) {
+        if (!trimmed || trimmed === fileName) {
             onClose();
             return;
         }
         setIsSubmitting(true);
         try {
-            await onRename(folderId, currentName, trimmed);
+            await onRename(trimmed);
             onClose();
         } catch {
-            // error handled by parent
             setIsSubmitting(false);
         }
     };
@@ -55,11 +53,10 @@ export function RenameFolderModal({ folderId, currentName, onRename, onClose }: 
                 className="bg-telegram-surface border border-telegram-border rounded-xl w-[360px] shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150"
                 onClick={e => e.stopPropagation()}
             >
-                {/* Header */}
                 <div className="p-4 border-b border-telegram-border flex items-center justify-between">
                     <h3 className="text-telegram-text font-medium flex items-center gap-2">
                         <Pencil className="w-4 h-4 text-blue-400" />
-                        {t('files.rename_folder')}
+                        {t('files.rename_file')}
                     </h3>
                     <button
                         onClick={onClose}
@@ -70,25 +67,20 @@ export function RenameFolderModal({ folderId, currentName, onRename, onClose }: 
                     </button>
                 </div>
 
-                {/* Body */}
                 <div className="p-4 space-y-3">
-                    <div className="text-sm text-telegram-subtext">
-                        {t('files.enter_new_name', { name: currentName })}
-                    </div>
                     <input
                         ref={inputRef}
                         type="text"
                         value={name}
                         onChange={e => setName(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        maxLength={100}
+                        maxLength={200}
                         className="w-full bg-telegram-bg border border-telegram-border rounded-lg px-3 py-2 text-sm text-telegram-text placeholder:text-telegram-subtext/50 focus:outline-none focus:ring-2 focus:ring-telegram-primary/50 focus:border-telegram-primary/50 transition-all"
-                        placeholder={t('files.folder_name')}
+                        placeholder={t('files.file_name')}
                         disabled={isSubmitting}
                     />
                 </div>
 
-                {/* Footer */}
                 <div className="p-4 border-t border-telegram-border flex justify-end gap-2 bg-telegram-hover/10">
                     <button
                         onClick={onClose}
@@ -99,7 +91,7 @@ export function RenameFolderModal({ folderId, currentName, onRename, onClose }: 
                     </button>
                     <button
                         onClick={handleSubmit}
-                        disabled={isSubmitting || !name.trim() || name.trim() === currentName}
+                        disabled={isSubmitting || !name.trim() || name.trim() === fileName}
                         className="px-4 py-2 text-sm font-medium text-white bg-telegram-primary hover:bg-telegram-primary/90 disabled:opacity-40 disabled:cursor-not-allowed rounded-lg transition-colors"
                     >
                         {isSubmitting ? t('files.renaming') : t('files.rename')}
