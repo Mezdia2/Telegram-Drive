@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { MoreVertical, Globe, Pencil, Trash2, EyeOff, Eye, Link } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface SidebarItemProps {
     icon: React.ElementType;
@@ -26,9 +27,11 @@ interface SidebarItemProps {
  */
 export function SidebarItem({ icon: Icon, label, active = false, onClick, onDrop, onDelete, folderId, isPublic, collapsed = false, onRename, onToggleVisibility, onExportInvite }: SidebarItemProps) {
     const [isOver, setIsOver] = useState(false);
+    const [dragCount, setDragCount] = useState(0);
     const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
     const menuRef = useRef<HTMLDivElement>(null);
     const settingsBtnRef = useRef<HTMLDivElement>(null);
+    const { t } = useTranslation();
 
     const hasFolderActions = onDelete && folderId !== null;
 
@@ -74,6 +77,17 @@ export function SidebarItem({ icon: Icon, label, active = false, onClick, onDrop
         }
     }, [contextMenu]);
 
+    // Parse drop count from drag data so we can show a badge
+    const parseDragCount = useCallback((e: React.DragEvent): number => {
+        const rawIds = e.dataTransfer.getData("application/x-telegram-file-ids");
+        if (rawIds) {
+            try { const ids = JSON.parse(rawIds); if (Array.isArray(ids) && ids.length > 0) return ids.length; } catch { /* ignore */ }
+        }
+        const singleId = e.dataTransfer.getData("application/x-telegram-file-id");
+        if (singleId) return 1;
+        return 0;
+    }, []);
+
     return (
         <div
             onClick={onClick}
@@ -81,6 +95,7 @@ export function SidebarItem({ icon: Icon, label, active = false, onClick, onDrop
                 e.preventDefault();
                 e.stopPropagation();
                 setIsOver(true);
+                setDragCount(parseDragCount(e));
             }}
             onDragOver={(e) => {
                 e.preventDefault();
@@ -95,12 +110,14 @@ export function SidebarItem({ icon: Icon, label, active = false, onClick, onDrop
                 const y = e.clientY;
                 if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
                     setIsOver(false);
+                    setDragCount(0);
                 }
             }}
             onDrop={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setIsOver(false);
+                setDragCount(0);
                 if (onDrop) onDrop(e);
             }}
             onContextMenu={openContextMenu}
@@ -127,7 +144,12 @@ export function SidebarItem({ icon: Icon, label, active = false, onClick, onDrop
 
             {!collapsed && (
                 <>
-                    <span className="flex-1 text-left truncate">{label}</span>
+                <span className="flex-1 text-left truncate">{label}</span>
+                    {isOver && dragCount > 1 && (
+                        <span className="flex-shrink-0 px-1.5 py-0.5 bg-telegram-primary text-white text-[10px] font-bold rounded-full leading-none min-w-[18px] text-center">
+                            {dragCount}
+                        </span>
+                    )}
                     {isPublic && (
                         <Globe className="w-3 h-3 text-emerald-400 flex-shrink-0" />
                     )}
@@ -136,7 +158,7 @@ export function SidebarItem({ icon: Icon, label, active = false, onClick, onDrop
                             ref={settingsBtnRef}
                             onClick={openSettingsPopover}
                             className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-telegram-hover transition-all"
-                            title="Folder settings"
+                            title={t('files.folder_settings')}
                         >
                             <MoreVertical className="w-3.5 h-3.5 text-telegram-subtext hover:text-telegram-text" />
                         </div>
@@ -170,7 +192,7 @@ export function SidebarItem({ icon: Icon, label, active = false, onClick, onDrop
                             className="flex items-center gap-2 px-2 py-1.5 text-sm text-telegram-text hover:bg-telegram-hover rounded transition-colors text-left w-full"
                         >
                             <Pencil className="w-4 h-4 text-blue-400" />
-                            Rename
+                            {t('files.rename')}
                         </button>
                     )}
 
@@ -182,12 +204,12 @@ export function SidebarItem({ icon: Icon, label, active = false, onClick, onDrop
                             {isPublic ? (
                                 <>
                                     <EyeOff className="w-4 h-4 text-amber-400" />
-                                    Make Private
+                                    {t('files.make_private')}
                                 </>
                             ) : (
                                 <>
                                     <Eye className="w-4 h-4 text-emerald-400" />
-                                    Make Public
+                                    {t('files.make_public')}
                                 </>
                             )}
                         </button>
@@ -199,7 +221,7 @@ export function SidebarItem({ icon: Icon, label, active = false, onClick, onDrop
                             className="flex items-center gap-2 px-2 py-1.5 text-sm text-telegram-text hover:bg-telegram-hover rounded transition-colors text-left w-full"
                         >
                             <Link className="w-4 h-4 text-telegram-primary" />
-                            Copy Invite Link
+                            {t('files.copy_link')}
                         </button>
                     )}
 
@@ -210,7 +232,7 @@ export function SidebarItem({ icon: Icon, label, active = false, onClick, onDrop
                         className="flex items-center gap-2 px-2 py-1.5 text-sm text-red-500 hover:bg-red-500/10 rounded transition-colors text-left w-full"
                     >
                         <Trash2 className="w-4 h-4" />
-                        Delete
+                        {t('files.delete')}
                     </button>
                 </div>
             )}
