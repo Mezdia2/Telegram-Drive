@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, RotateCcw, Download, Upload, Trash2, HardDrive, Globe, Key, Copy, Check, RefreshCw, FolderArchive, Shield, ShieldCheck, ShieldOff, ShieldAlert, Zap, Activity, Gauge, Wifi, ChevronDown, Link, Sparkles, Info, Clipboard, Monitor, Loader2, Languages, Plus, Pencil, Server, Power } from 'lucide-react';
+import { X, RotateCcw, Download, Upload, Trash2, HardDrive, Globe, Key, Copy, Check, RefreshCw, FolderArchive, Shield, ShieldCheck, ShieldOff, ShieldAlert, Zap, Activity, Gauge, Wifi, ChevronDown, Link, Sparkles, Info, Clipboard, Monitor, Loader2, Languages, Plus, Pencil, Server, Power, Palette, Sun, Moon } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-shell';
 import { toast } from 'sonner';
 import { check, Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
 import { ProxyProfile, useSettings } from '../../../context/SettingsContext';
+import { useTheme } from '../../../context/ThemeContext';
 import { useConfirm } from '../../../context/ConfirmContext';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES } from '../../../i18n/languages';
@@ -57,6 +58,12 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
     const { settings, updateSetting, updateSettings, resetSettings } = useSettings();
     const { confirm } = useConfirm();
     const { t } = useTranslation();
+    const {
+        mode, setMode, themes,
+        darkThemeId, lightThemeId, setDarkThemeId, setLightThemeId,
+    } = useTheme();
+    const darkThemes = themes.filter(th => th.mode === 'dark');
+    const lightThemes = themes.filter(th => th.mode === 'light');
     const [clearing, setClearing] = useState(false);
 
     // Transcode cache state
@@ -604,6 +611,91 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
                                         transition={{ type: 'spring', damping: 25, stiffness: 220, opacity: { duration: 0.15 } }}
                                         className="space-y-6 w-full"
                                     >
+
+                            {/* Appearance Section */}
+                            <section className="space-y-3">
+                                <h3 className="text-xs font-semibold text-telegram-subtext uppercase tracking-wider flex items-center gap-2">
+                                    <Palette className="w-3.5 h-3.5" />
+                                    {t('settings.appearance', 'Appearance')}
+                                </h3>
+
+                                {/* Active mode (Light / Dark) */}
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
+                                    <div className="flex items-center gap-2">
+                                        {mode === 'dark' ? <Moon className="w-4 h-4 text-telegram-subtext" /> : <Sun className="w-4 h-4 text-telegram-subtext" />}
+                                        <div>
+                                            <p className="text-sm text-telegram-text font-medium">{t('settings.color_mode', 'Color Mode')}</p>
+                                            <p className="text-xs text-telegram-subtext">{t('settings.color_mode_desc', 'Active light or dark mode')}</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 p-0.5 rounded-lg bg-telegram-bg border border-telegram-border">
+                                        <button
+                                            onClick={() => setMode('light')}
+                                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition ${mode === 'light' ? 'bg-telegram-primary text-white' : 'text-telegram-subtext hover:text-telegram-text'}`}
+                                        >
+                                            <Sun className="w-3.5 h-3.5" />
+                                            {t('common.light_mode')}
+                                        </button>
+                                        <button
+                                            onClick={() => setMode('dark')}
+                                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition ${mode === 'dark' ? 'bg-telegram-primary text-white' : 'text-telegram-subtext hover:text-telegram-text'}`}
+                                        >
+                                            <Moon className="w-3.5 h-3.5" />
+                                            {t('common.dark_mode')}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Dark Mode theme selector */}
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
+                                    <div className="flex items-center gap-2">
+                                        <Moon className="w-4 h-4 text-telegram-subtext" />
+                                        <div>
+                                            <p className="text-sm text-telegram-text font-medium">{t('settings.dark_mode_theme', 'Dark Mode Theme')}</p>
+                                            <p className="text-xs text-telegram-subtext">{t('settings.dark_mode_theme_desc', 'Theme used when dark mode is active')}</p>
+                                        </div>
+                                    </div>
+                                    <div className="relative">
+                                        <select
+                                            value={darkThemeId}
+                                            onChange={e => setDarkThemeId(e.target.value)}
+                                            className="appearance-none bg-telegram-bg border border-telegram-border rounded-md pl-3 pr-8 py-1.5 text-sm text-telegram-text focus:outline-none focus:border-telegram-primary/50 transition cursor-pointer"
+                                        >
+                                            {darkThemes.map(th => (
+                                                <option key={th.id} value={th.id}>
+                                                    {t(th.labelKey, th.label)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="w-4 h-4 text-telegram-subtext absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    </div>
+                                </div>
+
+                                {/* Light Mode theme selector */}
+                                <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
+                                    <div className="flex items-center gap-2">
+                                        <Sun className="w-4 h-4 text-telegram-subtext" />
+                                        <div>
+                                            <p className="text-sm text-telegram-text font-medium">{t('settings.light_mode_theme', 'Light Mode Theme')}</p>
+                                            <p className="text-xs text-telegram-subtext">{t('settings.light_mode_theme_desc', 'Theme used when light mode is active')}</p>
+                                        </div>
+                                    </div>
+                                    <div className="relative">
+                                        <select
+                                            value={lightThemeId}
+                                            onChange={e => setLightThemeId(e.target.value)}
+                                            className="appearance-none bg-telegram-bg border border-telegram-border rounded-md pl-3 pr-8 py-1.5 text-sm text-telegram-text focus:outline-none focus:border-telegram-primary/50 transition cursor-pointer"
+                                        >
+                                            {lightThemes.map(th => (
+                                                <option key={th.id} value={th.id}>
+                                                    {t(th.labelKey, th.label)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="w-4 h-4 text-telegram-subtext absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                                    </div>
+                                </div>
+                            </section>
 
                             {/* Transfers Section */}
                             <section className="space-y-3">
