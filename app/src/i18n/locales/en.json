@@ -47,6 +47,14 @@
     "files": "Files",
     "transfers": "Transfers"
   },
+  "themes": {
+    "telegram_dark": "Telegram Dark",
+    "telegram_light": "Telegram Light",
+    "mezdia_dark": "Mezdia Dark",
+    "mezdia_light": "Mezdia Light",
+    "classic_dark": "Classic Dark",
+    "classic_light": "Classic Light"
+  },
   "settings": {
     "title": "Settings",
     "tab_general": "General",
@@ -55,6 +63,13 @@
     "tab_sharing": "Sharing",
     "tab_about": "About",
     "auto": "Auto",
+    "appearance": "Appearance",
+    "color_mode": "Color Mode",
+    "color_mode_desc": "Active light or dark mode",
+    "dark_mode_theme": "Dark Mode Theme",
+    "dark_mode_theme_desc": "Theme used when dark mode is active",
+    "light_mode_theme": "Light Mode Theme",
+    "light_mode_theme_desc": "Theme used when light mode is active",
     "transfers": "Transfers",
     "concurrent_uploads": "Concurrent Uploads",
     "max_uploads_desc": "Max parallel uploads",

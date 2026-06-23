@@ -47,7 +47,22 @@
     "files": "파일",
     "transfers": "전송"
   },
+  "themes": {
+    "telegram_dark": "Telegram Dark",
+    "telegram_light": "Telegram Light",
+    "mezdia_dark": "Mezdia Dark",
+    "mezdia_light": "Mezdia Light",
+    "classic_dark": "Classic Dark",
+    "classic_light": "Classic Light"
+  },
   "settings": {
+    "appearance": "Appearance",
+    "color_mode": "Color Mode",
+    "color_mode_desc": "Active light or dark mode",
+    "dark_mode_theme": "Dark Mode Theme",
+    "dark_mode_theme_desc": "Theme used when dark mode is active",
+    "light_mode_theme": "Light Mode Theme",
+    "light_mode_theme_desc": "Theme used when light mode is active",
     "concurrent_uploads": "동시 업로드 수",
     "concurrent_downloads": "동시 다운로드 수",
     "zip_before_upload": "업로드 전 폴더 ZIP 압축",
