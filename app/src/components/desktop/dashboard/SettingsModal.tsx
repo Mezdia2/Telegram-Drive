@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, RotateCcw, Download, Upload, Trash2, HardDrive, Globe, Key, Copy, Check, RefreshCw, FolderArchive, Shield, Zap, Activity, Gauge, Wifi, ChevronDown, Link, Sparkles, Info, Clipboard, Monitor, Loader2, Languages } from 'lucide-react';
+import { X, RotateCcw, Download, Upload, Trash2, HardDrive, Globe, Key, Copy, Check, RefreshCw, FolderArchive, Shield, ShieldCheck, ShieldOff, ShieldAlert, Zap, Activity, Gauge, Wifi, ChevronDown, Link, Sparkles, Info, Clipboard, Monitor, Loader2, Languages, Plus, Pencil, Server, Power } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-shell';
 import { toast } from 'sonner';
 import { check, Update } from '@tauri-apps/plugin-updater';
 import { relaunch } from '@tauri-apps/plugin-process';
-import { useSettings } from '../../../context/SettingsContext';
+import { ProxyProfile, useSettings } from '../../../context/SettingsContext';
 import { useConfirm } from '../../../context/ConfirmContext';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGES } from '../../../i18n/languages';
@@ -28,8 +28,33 @@ interface ApiSettings {
     running: boolean;
 }
 
+type ProxyFormState = Omit<ProxyProfile, 'id'>;
+
+const emptyProxyForm: ProxyFormState = {
+    name: '',
+    type: 'socks5',
+    host: '',
+    port: 1080,
+    username: '',
+    password: '',
+};
+
+const defaultProxyPorts: Record<ProxyProfile['type'], number> = {
+    socks5: 1080,
+    http: 8080,
+    https: 8443,
+};
+
+function proxyLabel(proxy: ProxyProfile) {
+    return proxy.name.trim() || `${proxy.type.toUpperCase()} ${proxy.host}:${proxy.port}`;
+}
+
+function makeProxyId() {
+    return `proxy-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
 export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProps) {
-    const { settings, updateSetting, resetSettings } = useSettings();
+    const { settings, updateSetting, updateSettings, resetSettings } = useSettings();
     const { confirm } = useConfirm();
     const { t } = useTranslation();
     const [clearing, setClearing] = useState(false);
@@ -51,6 +76,9 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
 
     // Reconnect state
     const [reconnecting, setReconnecting] = useState(false);
+    const [proxyDialogOpen, setProxyDialogOpen] = useState(false);
+    const [editingProxyId, setEditingProxyId] = useState<string | null>(null);
+    const [proxyForm, setProxyForm] = useState<ProxyFormState>(emptyProxyForm);
 
     // Diagnostics state
     const [diagLoading, setDiagLoading] = useState(false);
@@ -223,28 +251,6 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
         return () => clearInterval(interval);
     }, [isOpen, apiSettings.enabled, fetchApiSettings]);
 
-    // Sync proxy settings to backend whenever they change
-    useEffect(() => {
-        const applyProxy = async () => {
-            try {
-                await invoke('cmd_apply_proxy_settings', {
-                    enabled: settings.proxyEnabled,
-                    proxyType: settings.proxyType,
-                    host: settings.proxyHost,
-                    port: settings.proxyPort,
-                    username: settings.proxyUsername,
-                    password: settings.proxyPassword,
-                });
-            } catch {
-                // best-effort sync
-            }
-        };
-        applyProxy();
-    }, [
-        settings.proxyEnabled, settings.proxyType, settings.proxyHost,
-        settings.proxyPort, settings.proxyUsername, settings.proxyPassword,
-    ]);
-
     // Sync VPN optimizer settings to backend whenever they change
     useEffect(() => {
         const applyVpn = async () => {
@@ -382,6 +388,158 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
             setTimeout(() => setKeyCopied(false), 2000);
         } catch {
             toast.error(t('settings.copy_clipboard_failed'));
+        }
+    };
+
+    const activeProxy = settings.proxyProfiles.find(proxy => proxy.id === settings.selectedProxyId) || null;
+
+    const applyProxyAndReconnect = useCallback(async (
+        proxy: ProxyProfile | null,
+        enabled: boolean,
+        options?: { toastOnSuccess?: boolean }
+    ) => {
+        setReconnecting(true);
+        try {
+            await invoke('cmd_apply_proxy_settings', {
+                enabled,
+                proxyType: proxy?.type || 'socks5',
+                host: proxy?.host || '',
+                port: proxy?.port || 1080,
+                username: proxy?.username || '',
+                password: proxy?.password || '',
+            });
+            let reconnected = false;
+            try {
+                reconnected = await invoke<boolean>('cmd_reconnect_with_network_settings');
+            } catch {
+                reconnected = false;
+            }
+            if (enabled && proxy) {
+                invoke('cmd_probe_proxy').catch(() => undefined);
+            }
+            if (options?.toastOnSuccess) {
+                toast.success(enabled && proxy
+                    ? `Using ${proxyLabel(proxy)}`
+                    : 'Proxy disabled');
+            } else if (enabled && proxy && reconnected) {
+                toast.success(t('settings.reconnect_success_toast'));
+            }
+        } catch (e) {
+            toast.error(t('settings.reconnect_failed_err_toast', { error: e }));
+        } finally {
+            setReconnecting(false);
+        }
+    }, [t]);
+
+    const openAddProxy = () => {
+        setEditingProxyId(null);
+        setProxyForm(emptyProxyForm);
+        setProxyDialogOpen(true);
+    };
+
+    const openEditProxy = (proxy: ProxyProfile) => {
+        setEditingProxyId(proxy.id);
+        setProxyForm({
+            name: proxy.name,
+            type: proxy.type,
+            host: proxy.host,
+            port: proxy.port,
+            username: proxy.username,
+            password: proxy.password,
+        });
+        setProxyDialogOpen(true);
+    };
+
+    const closeProxyDialog = () => {
+        setProxyDialogOpen(false);
+        setEditingProxyId(null);
+        setProxyForm(emptyProxyForm);
+    };
+
+    const handleSaveProxy = async () => {
+        const host = proxyForm.host.trim();
+        if (!host) {
+            toast.error('Proxy host is required');
+            return;
+        }
+        const port = Math.max(1, Math.min(65535, Math.round(Number(proxyForm.port) || defaultProxyPorts[proxyForm.type])));
+        const nextProxy: ProxyProfile = {
+            id: editingProxyId || makeProxyId(),
+            name: proxyForm.name.trim() || `${proxyForm.type.toUpperCase()} ${host}:${port}`,
+            type: proxyForm.type,
+            host,
+            port,
+            username: proxyForm.username.trim(),
+            password: proxyForm.password,
+        };
+
+        const nextProfiles = editingProxyId
+            ? settings.proxyProfiles.map(proxy => proxy.id === editingProxyId ? nextProxy : proxy)
+            : [...settings.proxyProfiles, nextProxy];
+
+        updateSettings({
+            proxyProfiles: nextProfiles,
+            selectedProxyId: nextProxy.id,
+            proxyEnabled: true,
+            proxyType: nextProxy.type,
+            proxyHost: nextProxy.host,
+            proxyPort: nextProxy.port,
+            proxyUsername: nextProxy.username,
+            proxyPassword: nextProxy.password,
+        });
+        closeProxyDialog();
+        await applyProxyAndReconnect(nextProxy, true, { toastOnSuccess: true });
+    };
+
+    const handleSelectProxy = async (proxy: ProxyProfile) => {
+        updateSettings({
+            selectedProxyId: proxy.id,
+            proxyEnabled: true,
+            proxyType: proxy.type,
+            proxyHost: proxy.host,
+            proxyPort: proxy.port,
+            proxyUsername: proxy.username,
+            proxyPassword: proxy.password,
+        });
+        await applyProxyAndReconnect(proxy, true, { toastOnSuccess: true });
+    };
+
+    const handleToggleProxy = async () => {
+        const nextEnabled = !settings.proxyEnabled;
+        if (nextEnabled && !activeProxy) {
+            openAddProxy();
+            return;
+        }
+        updateSettings({ proxyEnabled: nextEnabled });
+        await applyProxyAndReconnect(activeProxy, nextEnabled, { toastOnSuccess: true });
+    };
+
+    const handleDeleteProxy = async (proxy: ProxyProfile) => {
+        const ok = await confirm({
+            title: 'Delete proxy?',
+            message: `${proxyLabel(proxy)} will be removed from your proxy list.`,
+            confirmText: 'Delete',
+            variant: 'danger',
+        });
+        if (!ok) return;
+
+        const remaining = settings.proxyProfiles.filter(item => item.id !== proxy.id);
+        const nextActive = proxy.id === settings.selectedProxyId ? remaining[0] || null : activeProxy;
+        const nextEnabled = Boolean(nextActive) && (proxy.id === settings.selectedProxyId ? false : settings.proxyEnabled);
+
+        updateSettings({
+            proxyProfiles: remaining,
+            selectedProxyId: nextActive?.id || null,
+            proxyEnabled: nextEnabled,
+            proxyType: nextActive?.type || 'socks5',
+            proxyHost: nextActive?.host || '',
+            proxyPort: nextActive?.port || 1080,
+            proxyUsername: nextActive?.username || '',
+            proxyPassword: nextActive?.password || '',
+        });
+
+        if (proxy.id === settings.selectedProxyId) {
+            await applyProxyAndReconnect(nextActive, nextEnabled, { toastOnSuccess: true });
         }
     };
 
@@ -948,145 +1106,131 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
                                         transition={{ type: 'spring', damping: 25, stiffness: 220, opacity: { duration: 0.15 } }}
                                         className="space-y-3 w-full"
                                     >
-                                <h3 className="text-xs font-semibold text-telegram-subtext uppercase tracking-wider flex items-center gap-2">
-                                    <Shield className="w-3.5 h-3.5" />
-                                    {t('settings.proxy_config')}
-                                </h3>
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xs font-semibold text-telegram-subtext uppercase tracking-wider flex items-center gap-2">
+                                        <Shield className="w-3.5 h-3.5" />
+                                        {t('settings.proxy_config')}
+                                    </h3>
+                                    <button
+                                        onClick={openAddProxy}
+                                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-telegram-primary/10 text-telegram-primary hover:bg-telegram-primary/20 transition"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" />
+                                        Add
+                                    </button>
+                                </div>
 
-                                {/* Enable Proxy */}
                                 <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
-                                    <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${settings.proxyEnabled ? 'bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.5)]' : 'bg-gray-500'}`} />
-                                        <div>
-                                            <p className="text-sm text-telegram-text font-medium">{t('common.enable_proxy')}</p>
-                                            <p className="text-xs text-telegram-subtext">{t('settings.enable_proxy_desc')}</p>
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className={`flex items-center justify-center w-8 h-8 rounded-lg ${settings.proxyEnabled && activeProxy ? 'bg-emerald-500/10 text-emerald-400' : 'bg-telegram-border/40 text-telegram-subtext'}`}>
+                                            {settings.proxyEnabled && activeProxy ? <ShieldCheck className="w-4 h-4" /> : <ShieldOff className="w-4 h-4" />}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm text-telegram-text font-medium">
+                                                {settings.proxyEnabled && activeProxy ? 'Proxy enabled' : 'Proxy disabled'}
+                                            </p>
+                                            <p className="text-xs text-telegram-subtext truncate">
+                                                {activeProxy ? proxyLabel(activeProxy) : 'Add a proxy server to route Telegram traffic'}
+                                            </p>
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => updateSetting('proxyEnabled', !settings.proxyEnabled)}
-                                        className={`relative w-11 h-6 rounded-full transition-colors duration-200 ${settings.proxyEnabled ? 'bg-telegram-primary' : 'bg-telegram-border'}`}
-                                    >
-                                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${settings.proxyEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
-                                    </button>
-                                </div>
-
-                                {/* Proxy Type */}
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
-                                    <div>
-                                        <p className="text-sm text-telegram-text font-medium">{t('common.proxy_type')}</p>
-                                        <p className="text-xs text-telegram-subtext">{t('settings.proxy_type_desc', 'SOCKS5, HTTP, or HTTPS')}</p>
-                                    </div>
-                                    <div className="relative">
-                                        <select
-                                            value={settings.proxyType}
-                                            onChange={e => updateSetting('proxyType', e.target.value as 'socks5' | 'http' | 'https')}
-                                            className="appearance-none bg-telegram-bg border border-telegram-border rounded-md pl-3 pr-8 py-1.5 text-sm text-telegram-text focus:outline-none focus:border-telegram-primary/50 transition cursor-pointer"
-                                        >
-                                            <option value="socks5">SOCKS5</option>
-                                            <option value="http">HTTP</option>
-                                            <option value="https">HTTPS</option>
-                                        </select>
-                                        <ChevronDown className="w-4 h-4 text-telegram-subtext absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                                    </div>
-                                </div>
-
-                                {/* Host */}
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
-                                    <div>
-                                        <p className="text-sm text-telegram-text font-medium">{t('common.host')}</p>
-                                        <p className="text-xs text-telegram-subtext">{t('settings.host_desc')}</p>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        placeholder="e.g. 127.0.0.1"
-                                        value={settings.proxyHost}
-                                        onChange={e => updateSetting('proxyHost', e.target.value)}
-                                        className="w-40 bg-telegram-bg border border-telegram-border rounded-md px-2 py-1 text-sm text-telegram-text text-right focus:outline-none focus:border-telegram-primary/50 transition placeholder:text-telegram-subtext/40"
-                                    />
-                                </div>
-
-                                {/* Port */}
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
-                                    <div>
-                                        <p className="text-sm text-telegram-text font-medium">{t('common.port')}</p>
-                                        <p className="text-xs text-telegram-subtext">{t('settings.port_desc')}</p>
-                                    </div>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max="65535"
-                                        value={settings.proxyPort}
-                                        onChange={e => updateSetting('proxyPort', Math.max(1, Math.min(65535, parseInt(e.target.value) || 1080)))}
-                                        className="w-20 bg-telegram-bg border border-telegram-border rounded-md px-2 py-1 text-sm text-telegram-text text-center focus:outline-none focus:border-telegram-primary/50 transition"
-                                    />
-                                </div>
-
-                                {/* Auth fields (optional, used for all proxy types) */}
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
-                                    <div>
-                                        <p className="text-sm text-telegram-text font-medium">{t('common.username')}</p>
-                                        <p className="text-xs text-telegram-subtext">{t('settings.optional')}</p>
-                                    </div>
-                                    <input
-                                        type="text"
-                                        placeholder={t('settings.optional')}
-                                        value={settings.proxyUsername}
-                                        onChange={e => updateSetting('proxyUsername', e.target.value)}
-                                        className="w-40 bg-telegram-bg border border-telegram-border rounded-md px-2 py-1 text-sm text-telegram-text text-right focus:outline-none focus:border-telegram-primary/50 transition placeholder:text-telegram-subtext/40"
-                                    />
-                                </div>
-                                <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
-                                    <div>
-                                        <p className="text-sm text-telegram-text font-medium">{t('common.password')}</p>
-                                        <p className="text-xs text-telegram-subtext">{t('settings.optional')}</p>
-                                    </div>
-                                    <input
-                                        type="password"
-                                        placeholder={t('settings.optional')}
-                                        value={settings.proxyPassword}
-                                        onChange={e => updateSetting('proxyPassword', e.target.value)}
-                                        className="w-40 bg-telegram-bg border border-telegram-border rounded-md px-2 py-1 text-sm text-telegram-text text-right focus:outline-none focus:border-telegram-primary/50 transition placeholder:text-telegram-subtext/40"
-                                    />
-                                </div>
-
-                                {/* Info note */}
-                                <div className="p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/10 space-y-2">
-                                    <p className="text-[11px] text-yellow-400/70 leading-relaxed">
-                                        {t('settings.proxy_reconnect_note')}
-                                    </p>
-                                    <button
-                                        onClick={async () => {
-                                            setReconnecting(true);
-                                            try {
-                                                const ok = await invoke<boolean>('cmd_reconnect_with_network_settings');
-                                                invoke('cmd_probe_proxy').catch(() => {});
-                                                if (ok) {
-                                                    toast.success(t('settings.reconnect_success_toast'));
-                                                } else {
-                                                    toast.error(t('settings.reconnect_failed_toast'));
-                                                }
-                                            } catch (e) {
-                                                toast.error(t('settings.reconnect_failed_err_toast', { error: e }));
-                                            } finally {
-                                                setReconnecting(false);
-                                            }
-                                        }}
+                                        onClick={handleToggleProxy}
                                         disabled={reconnecting}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-telegram-primary/10 text-telegram-primary hover:bg-telegram-primary/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className={`relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 ${settings.proxyEnabled && activeProxy ? 'bg-telegram-primary' : 'bg-telegram-border'} disabled:opacity-50`}
                                     >
-                                        {reconnecting ? (
-                                            <>
-                                                <Loader2 className="w-3 h-3 animate-spin" />
-                                                {t('settings.reconnecting')}
-                                            </>
-                                        ) : (
-                                            <>
-                                                <RefreshCw className="w-3 h-3" />
-                                                {t('settings.reconnect_now')}
-                                            </>
-                                        )}
+                                        <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform duration-200 ${settings.proxyEnabled && activeProxy ? 'translate-x-5' : 'translate-x-0'}`} />
                                     </button>
                                 </div>
+
+                                <div className="overflow-hidden rounded-lg border border-telegram-border bg-telegram-bg/40">
+                                    {settings.proxyProfiles.length > 0 ? (
+                                        <div className="divide-y divide-telegram-border">
+                                            {settings.proxyProfiles.map(proxy => {
+                                                const selected = proxy.id === settings.selectedProxyId;
+                                                const active = selected && settings.proxyEnabled;
+                                                return (
+                                                    <div
+                                                        key={proxy.id}
+                                                        className={`group flex items-center gap-3 p-3 transition ${selected ? 'bg-telegram-primary/5' : 'hover:bg-telegram-hover/50'}`}
+                                                    >
+                                                        <button
+                                                            onClick={() => handleSelectProxy(proxy)}
+                                                            disabled={reconnecting}
+                                                            className={`flex items-center justify-center w-9 h-9 rounded-lg flex-shrink-0 ${active ? 'bg-telegram-primary/15 text-telegram-primary' : 'bg-telegram-hover text-telegram-subtext group-hover:text-telegram-text'} disabled:opacity-50`}
+                                                            title={active ? 'Selected' : 'Use proxy'}
+                                                        >
+                                                            {active ? <Check className="w-4 h-4" /> : <Server className="w-4 h-4" />}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleSelectProxy(proxy)}
+                                                            disabled={reconnecting}
+                                                            className="min-w-0 flex-1 text-left disabled:opacity-50"
+                                                        >
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="text-sm font-medium text-telegram-text truncate">{proxyLabel(proxy)}</p>
+                                                                <span className="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-telegram-hover text-telegram-subtext flex-shrink-0">
+                                                                    {proxy.type}
+                                                                </span>
+                                                            </div>
+                                                            <p className="text-xs text-telegram-subtext truncate">
+                                                                {proxy.host}:{proxy.port}{proxy.username ? ` · ${proxy.username}` : ''}
+                                                            </p>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => openEditProxy(proxy)}
+                                                            className="p-2 rounded-lg text-telegram-subtext hover:text-telegram-text hover:bg-telegram-hover transition"
+                                                            title="Edit proxy"
+                                                        >
+                                                            <Pencil className="w-4 h-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDeleteProxy(proxy)}
+                                                            className="p-2 rounded-lg text-telegram-subtext hover:text-red-400 hover:bg-red-500/10 transition"
+                                                            title="Delete proxy"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+                                        <div className="p-5 text-center">
+                                            <div className="mx-auto mb-3 flex items-center justify-center w-10 h-10 rounded-lg bg-telegram-hover text-telegram-subtext">
+                                                <ShieldAlert className="w-5 h-5" />
+                                            </div>
+                                            <p className="text-sm font-medium text-telegram-text">No proxies yet</p>
+                                            <p className="mt-1 text-xs text-telegram-subtext">Add a SOCKS5, HTTP, or HTTPS proxy and select it when needed.</p>
+                                            <button
+                                                onClick={openAddProxy}
+                                                className="mt-4 inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-telegram-primary text-white hover:bg-telegram-primary/90 transition"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                                Add proxy
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {activeProxy && (
+                                    <div className="flex items-center justify-between p-3 rounded-lg bg-telegram-hover/50">
+                                        <div className="min-w-0">
+                                            <p className="text-sm text-telegram-text font-medium">Current route</p>
+                                            <p className="text-xs text-telegram-subtext truncate">
+                                                {settings.proxyEnabled ? `${activeProxy.type.toUpperCase()} ${activeProxy.host}:${activeProxy.port}` : 'Direct connection'}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => applyProxyAndReconnect(activeProxy, settings.proxyEnabled, { toastOnSuccess: true })}
+                                            disabled={reconnecting || !settings.proxyEnabled}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-telegram-primary/10 text-telegram-primary hover:bg-telegram-primary/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {reconnecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                                            Reconnect
+                                        </button>
+                                    </div>
+                                )}
                             </motion.section>
                         )}
 
@@ -1584,6 +1728,140 @@ export function SettingsModal({ isOpen, onClose, initialTab }: SettingsModalProp
                                 {t('settings.done')}
                             </button>
                         </div>
+
+                        <AnimatePresence>
+                            {proxyDialogOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 z-10 flex items-center justify-center bg-black/45 backdrop-blur-sm"
+                                    onClick={closeProxyDialog}
+                                >
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.96, y: 8 }}
+                                        transition={{ type: 'spring', damping: 24, stiffness: 260 }}
+                                        className="w-[380px] rounded-xl border border-telegram-border bg-telegram-surface shadow-2xl overflow-hidden"
+                                        onClick={e => e.stopPropagation()}
+                                    >
+                                        <div className="px-4 py-3 border-b border-telegram-border flex items-center justify-between">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-telegram-primary/10 text-telegram-primary">
+                                                    <Server className="w-4 h-4" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-semibold text-telegram-text">
+                                                        {editingProxyId ? 'Edit proxy' : 'Add proxy'}
+                                                    </p>
+                                                    <p className="text-xs text-telegram-subtext">Telegram traffic will reconnect through this server.</p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={closeProxyDialog}
+                                                className="p-1.5 rounded-lg text-telegram-subtext hover:text-telegram-text hover:bg-telegram-hover transition"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+
+                                        <div className="p-4 space-y-3">
+                                            <div className="grid grid-cols-3 gap-1 rounded-lg bg-telegram-bg p-1 border border-telegram-border">
+                                                {(['socks5', 'http', 'https'] as const).map(type => (
+                                                    <button
+                                                        key={type}
+                                                        onClick={() => setProxyForm(prev => ({
+                                                            ...prev,
+                                                            type,
+                                                            port: prev.port === defaultProxyPorts[prev.type] ? defaultProxyPorts[type] : prev.port,
+                                                        }))}
+                                                        className={`py-1.5 rounded-md text-xs font-semibold uppercase transition ${proxyForm.type === type ? 'bg-telegram-primary text-white' : 'text-telegram-subtext hover:text-telegram-text hover:bg-telegram-hover'}`}
+                                                    >
+                                                        {type}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            <label className="block space-y-1.5">
+                                                <span className="text-xs font-medium text-telegram-subtext">Name</span>
+                                                <input
+                                                    type="text"
+                                                    value={proxyForm.name}
+                                                    onChange={e => setProxyForm(prev => ({ ...prev, name: e.target.value }))}
+                                                    placeholder="Optional label"
+                                                    className="w-full bg-telegram-bg border border-telegram-border rounded-lg px-3 py-2 text-sm text-telegram-text focus:outline-none focus:border-telegram-primary/50 transition placeholder:text-telegram-subtext/40"
+                                                />
+                                            </label>
+
+                                            <div className="grid grid-cols-[1fr_92px] gap-2">
+                                                <label className="block space-y-1.5 min-w-0">
+                                                    <span className="text-xs font-medium text-telegram-subtext">Server</span>
+                                                    <input
+                                                        type="text"
+                                                        value={proxyForm.host}
+                                                        onChange={e => setProxyForm(prev => ({ ...prev, host: e.target.value }))}
+                                                        placeholder="127.0.0.1"
+                                                        className="w-full bg-telegram-bg border border-telegram-border rounded-lg px-3 py-2 text-sm text-telegram-text focus:outline-none focus:border-telegram-primary/50 transition placeholder:text-telegram-subtext/40"
+                                                    />
+                                                </label>
+                                                <label className="block space-y-1.5">
+                                                    <span className="text-xs font-medium text-telegram-subtext">Port</span>
+                                                    <input
+                                                        type="number"
+                                                        min="1"
+                                                        max="65535"
+                                                        value={proxyForm.port}
+                                                        onChange={e => setProxyForm(prev => ({ ...prev, port: Math.max(1, Math.min(65535, parseInt(e.target.value) || defaultProxyPorts[prev.type])) }))}
+                                                        className="w-full bg-telegram-bg border border-telegram-border rounded-lg px-3 py-2 text-sm text-telegram-text text-center focus:outline-none focus:border-telegram-primary/50 transition"
+                                                    />
+                                                </label>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <label className="block space-y-1.5 min-w-0">
+                                                    <span className="text-xs font-medium text-telegram-subtext">Username</span>
+                                                    <input
+                                                        type="text"
+                                                        value={proxyForm.username}
+                                                        onChange={e => setProxyForm(prev => ({ ...prev, username: e.target.value }))}
+                                                        placeholder="Optional"
+                                                        className="w-full bg-telegram-bg border border-telegram-border rounded-lg px-3 py-2 text-sm text-telegram-text focus:outline-none focus:border-telegram-primary/50 transition placeholder:text-telegram-subtext/40"
+                                                    />
+                                                </label>
+                                                <label className="block space-y-1.5 min-w-0">
+                                                    <span className="text-xs font-medium text-telegram-subtext">Password</span>
+                                                    <input
+                                                        type="password"
+                                                        value={proxyForm.password}
+                                                        onChange={e => setProxyForm(prev => ({ ...prev, password: e.target.value }))}
+                                                        placeholder="Optional"
+                                                        className="w-full bg-telegram-bg border border-telegram-border rounded-lg px-3 py-2 text-sm text-telegram-text focus:outline-none focus:border-telegram-primary/50 transition placeholder:text-telegram-subtext/40"
+                                                    />
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <div className="px-4 py-3 border-t border-telegram-border flex items-center justify-end gap-2">
+                                            <button
+                                                onClick={closeProxyDialog}
+                                                className="px-3 py-1.5 rounded-lg text-xs font-medium text-telegram-subtext hover:text-telegram-text hover:bg-telegram-hover transition"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={handleSaveProxy}
+                                                disabled={reconnecting}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-telegram-primary text-white hover:bg-telegram-primary/90 transition disabled:opacity-50"
+                                            >
+                                                {reconnecting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Power className="w-3 h-3" />}
+                                                Save and use
+                                            </button>
+                                        </div>
+                                    </motion.div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </motion.div>
                 </motion.div>
             )}
