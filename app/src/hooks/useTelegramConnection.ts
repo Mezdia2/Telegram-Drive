@@ -94,6 +94,7 @@ export function useTelegramConnection(onLogoutParent: () => void) {
         try {
             await invoke('cmd_logout');
             await invoke('cmd_clean_cache');
+            await invoke('cmd_clear_auth_credentials');
             if (store) {
                 await store.delete('api_id');
                 await store.delete('api_hash');

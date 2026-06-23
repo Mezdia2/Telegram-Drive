@@ -1,6 +1,7 @@
 use tauri::State;
 use tauri::Manager;
 use grammers_client::Client;
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 use grammers_mtsender::SenderPool;
@@ -15,6 +16,95 @@ use crate::TelegramState;
 use crate::models::{AuthResult};
 use crate::commands::utils::map_error;
 use grammers_client::SignInError;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct StoredAuthCredentials {
+    pub api_id: String,
+    pub api_hash: String,
+}
+
+fn auth_credentials_path(app_handle: &tauri::AppHandle) -> Result<std::path::PathBuf, String> {
+    let app_data_dir = app_handle.path().app_data_dir()
+        .map_err(|e| format!("Failed to get app data dir: {}", e))?;
+
+    if !app_data_dir.exists() {
+        std::fs::create_dir_all(&app_data_dir)
+            .map_err(|e| format!("Failed to create app data dir: {}", e))?;
+    }
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = std::fs::set_permissions(&app_data_dir, std::fs::Permissions::from_mode(0o700));
+    }
+
+    Ok(app_data_dir.join("auth_credentials.json"))
+}
+
+fn harden_file_permissions(path: &std::path::Path) {
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600));
+    }
+}
+
+#[tauri::command]
+pub async fn cmd_save_auth_credentials(
+    app_handle: tauri::AppHandle,
+    api_id: String,
+    api_hash: String,
+) -> Result<bool, String> {
+    if api_id.trim().is_empty() {
+        return Err("API ID cannot be empty.".to_string());
+    }
+    if api_hash.trim().is_empty() {
+        return Err("API Hash cannot be empty.".to_string());
+    }
+
+    let path = auth_credentials_path(&app_handle)?;
+    let credentials = StoredAuthCredentials {
+        api_id: api_id.trim().to_string(),
+        api_hash: api_hash.trim().to_string(),
+    };
+    let payload = serde_json::to_vec(&credentials)
+        .map_err(|e| format!("Failed to serialize auth credentials: {}", e))?;
+
+    std::fs::write(&path, payload)
+        .map_err(|e| format!("Failed to save auth credentials: {}", e))?;
+    harden_file_permissions(&path);
+    Ok(true)
+}
+
+#[tauri::command]
+pub async fn cmd_get_auth_credentials(
+    app_handle: tauri::AppHandle,
+) -> Result<Option<StoredAuthCredentials>, String> {
+    let path = auth_credentials_path(&app_handle)?;
+    if !path.exists() {
+        return Ok(None);
+    }
+
+    harden_file_permissions(&path);
+    let bytes = std::fs::read(&path)
+        .map_err(|e| format!("Failed to read auth credentials: {}", e))?;
+    let credentials = serde_json::from_slice::<StoredAuthCredentials>(&bytes)
+        .map_err(|e| format!("Failed to parse auth credentials: {}", e))?;
+
+    Ok(Some(credentials))
+}
+
+#[tauri::command]
+pub async fn cmd_clear_auth_credentials(
+    app_handle: tauri::AppHandle,
+) -> Result<bool, String> {
+    let path = auth_credentials_path(&app_handle)?;
+    if path.exists() {
+        std::fs::remove_file(&path)
+            .map_err(|e| format!("Failed to clear auth credentials: {}", e))?;
+    }
+    Ok(true)
+}
 
 /// Ensures the Telegram client is initialized.
 /// 
@@ -72,6 +162,12 @@ pub async fn ensure_client_initialized(
         std::fs::create_dir_all(&app_data_dir)
             .map_err(|e| format!("Failed to create app data dir: {}", e))?;
     }
+
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let _ = std::fs::set_permissions(&app_data_dir, std::fs::Permissions::from_mode(0o700));
+    }
     
     let session_path = app_data_dir.join("telegram.session");
     let session_path_str = session_path.to_string_lossy().to_string();
@@ -104,6 +200,7 @@ pub async fn ensure_client_initialized(
                 .map_err(|err| format!("Failed to open session after recreation: {}", err))?
         }
     };
+    harden_file_permissions(&session_path);
         
     let net_config = app_handle.state::<Arc<crate::vpn_optimizer::NetworkConfig>>();
     let preferred_dc = {
