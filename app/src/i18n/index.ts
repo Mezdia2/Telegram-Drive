@@ -7,6 +7,7 @@ import ru from './locales/ru.json';
 import zhCN from './locales/zh-CN.json';
 import fr from './locales/fr.json';
 import ar from './locales/ar.json';
+import fa from './locales/fa.json';
 import ptBR from './locales/pt-BR.json';
 import de from './locales/de.json';
 import hi from './locales/hi.json';
@@ -25,6 +26,7 @@ i18n
       'zh-CN': { translation: zhCN },
       fr: { translation: fr },
       ar: { translation: ar },
+      fa: { translation: fa },
       'pt-BR': { translation: ptBR },
       de: { translation: de },
       hi: { translation: hi },
