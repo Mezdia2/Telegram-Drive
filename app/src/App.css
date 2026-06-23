@@ -7,24 +7,24 @@
   --font-display: 'Fraunces', 'Tiempos Headline', 'Söhne', Georgia, 'Times New Roman', serif;
   --font-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', 'Menlo', 'Consolas', monospace;
 
-  /* ---- Surfaces (dark canvas) ------------------------------------------ */
-  --color-telegram-bg: #000000;          /* canvas — true black */
-  --color-telegram-surface: #0a0a0c;     /* surface-card */
-  --color-telegram-elevated: #101012;    /* surface-elevated */
-  --color-telegram-deep: #06060a;        /* code well — cooler & deeper */
+  /* ---- Surfaces (Telegram dark fallback) ------------------------------- */
+  --color-telegram-bg: #17212b;
+  --color-telegram-surface: #232e3c;
+  --color-telegram-elevated: #2b5278;
+  --color-telegram-deep: #0f1923;
 
-  /* ---- Brand (white is the accent) ------------------------------------- */
-  --color-telegram-primary: #fcfdff;       /* the brightest pixel — white CTA + ink accent */
-  --color-telegram-primary-hover: #f1f7fe; /* surface-light — pressed state */
-  --color-telegram-on-primary: #000000;    /* label colour on the white CTA */
-  --color-telegram-secondary: #3b9eff;     /* accent-blue / link */
+  /* ---- Brand ------------------------------------------------------------ */
+  --color-telegram-primary: #2aabee;
+  --color-telegram-primary-hover: #1a8dc7;
+  --color-telegram-on-primary: #ffffff;
+  --color-telegram-secondary: #5bbef5;
 
   /* ---- Text ------------------------------------------------------------- */
-  --color-telegram-text: #fcfdff;                    /* ink — faintly blue-cool */
-  --color-telegram-subtext: rgba(252, 253, 255, 0.70); /* charcoal */
+  --color-telegram-text: #ffffff;
+  --color-telegram-subtext: #708499;
 
   /* ---- Lines / states --------------------------------------------------- */
-  --color-telegram-border: rgba(255, 255, 255, 0.10); /* hairline */
+  --color-telegram-border: rgba(255, 255, 255, 0.08);
   --color-telegram-hover: rgba(255, 255, 255, 0.05);
 
   /* ---- Atmospheric accents (glows / inline highlights only) ------------ */
@@ -35,23 +35,136 @@
   --color-accent-red: #ff2047;
 }
 
-/* ---- Light theme: inverse-contrast (off-white island, black CTA) ------- */
-:root.light {
-  --color-telegram-bg: #f1f7fe;          /* surface-light */
+/* ============================================================================
+   THEME PALETTES
+   ----------------------------------------------------------------------------
+   Each theme is a complete palette applied via a [data-theme="..."] attribute
+   on <html>. The @theme block above still defines the token NAMES (so Tailwind
+   generates the bg-telegram-* / text-telegram-* utilities) and serves as the
+   ultimate fallback; these blocks override the *values* for the active theme.
+
+   The .light / .dark CLASS is set alongside data-theme and drives the
+   structural light-mode component tweaks further down (auth glass, inputs,
+   scrollbars, shadows). data-theme picks the colours; the class picks the
+   light/dark structural treatment.
+
+   Slots: the user assigns one theme to the "Dark Mode" slot and one to the
+   "Light Mode" slot in Settings → General → Appearance; the toggle flips
+   between the two assigned themes. Defaults: telegram-dark / telegram-light.
+   ============================================================================ */
+
+/* ---- Telegram Dark (default dark) — design-system.md dark tokens --------- */
+:root[data-theme="telegram-dark"] {
+  --color-telegram-bg: #17212b;          /* L0 base */
+  --color-telegram-surface: #232e3c;     /* L1 surface */
+  --color-telegram-elevated: #2b5278;    /* L2 elevated / outgoing bubble */
+  --color-telegram-deep: #0f1923;        /* code well / divider */
+
+  --color-telegram-primary: #2aabee;       /* the one Telegram accent */
+  --color-telegram-primary-hover: #1a8dc7; /* pressed */
+  --color-telegram-on-primary: #ffffff;    /* label on accent */
+  --color-telegram-secondary: #5bbef5;     /* lighter link blue on dark */
+
+  --color-telegram-text: #ffffff;
+  --color-telegram-subtext: #708499;
+
+  --color-telegram-border: rgba(255, 255, 255, 0.08);
+  --color-telegram-hover: rgba(255, 255, 255, 0.05);
+}
+
+/* ---- Telegram Light (default light) — design-system.md light tokens ------ */
+:root[data-theme="telegram-light"] {
+  --color-telegram-bg: #f1f1f4;          /* L0 base / secondary */
+  --color-telegram-surface: #ffffff;     /* L1 surface */
+  --color-telegram-elevated: #ffffff;    /* L2 overlay */
+  --color-telegram-deep: #e7e7e7;        /* wells / dividers */
+
+  --color-telegram-primary: #2aabee;
+  --color-telegram-primary-hover: #1a8dc7;
+  --color-telegram-on-primary: #ffffff;
+  --color-telegram-secondary: #1a8dc7;
+
+  --color-telegram-text: #000000;
+  --color-telegram-subtext: #707579;
+
+  --color-telegram-border: #e7e7e7;
+  --color-telegram-hover: rgba(0, 0, 0, 0.04);
+}
+
+/* ---- Mezdia Dark — the editorial-dark system (true-black canvas) --------- */
+:root[data-theme="mezdia-dark"] {
+  --color-telegram-bg: #000000;
+  --color-telegram-surface: #0a0a0c;
+  --color-telegram-elevated: #101012;
+  --color-telegram-deep: #06060a;
+
+  --color-telegram-primary: #fcfdff;
+  --color-telegram-primary-hover: #f1f7fe;
+  --color-telegram-on-primary: #000000;
+  --color-telegram-secondary: #3b9eff;
+
+  --color-telegram-text: #fcfdff;
+  --color-telegram-subtext: rgba(252, 253, 255, 0.70);
+
+  --color-telegram-border: rgba(255, 255, 255, 0.10);
+  --color-telegram-hover: rgba(255, 255, 255, 0.05);
+}
+
+/* ---- Mezdia Light — inverse-contrast (off-white island, black CTA) ------- */
+:root[data-theme="mezdia-light"] {
+  --color-telegram-bg: #f1f7fe;
   --color-telegram-surface: #ffffff;
   --color-telegram-elevated: #ffffff;
-  --color-telegram-deep: #0a0a0c;        /* code wells stay dark even in light */
+  --color-telegram-deep: #0a0a0c;
 
-  --color-telegram-primary: #0a0a0c;       /* black CTA — the inverse anchor */
+  --color-telegram-primary: #0a0a0c;
   --color-telegram-primary-hover: #1c1c22;
   --color-telegram-on-primary: #fcfdff;
   --color-telegram-secondary: #0075ff;
 
-  --color-telegram-text: #000000;                 /* on-light */
-  --color-telegram-subtext: rgba(0, 0, 51, 0.70); /* on-light-mute */
+  --color-telegram-text: #000000;
+  --color-telegram-subtext: rgba(0, 0, 51, 0.70);
 
   --color-telegram-border: rgba(0, 0, 0, 0.12);
   --color-telegram-hover: rgba(0, 0, 0, 0.04);
+}
+
+/* ---- Classic Dark — the pre-editorial Telegram-amber dark theme ---------- */
+:root[data-theme="classic-dark"] {
+  --color-telegram-bg: #0e1621;
+  --color-telegram-surface: #17212b;
+  --color-telegram-elevated: #17212b;
+  --color-telegram-deep: #0e1621;
+
+  --color-telegram-primary: #ffae00;
+  --color-telegram-primary-hover: #e69d00;
+  --color-telegram-on-primary: #000000;
+  --color-telegram-secondary: #2481cc;
+
+  --color-telegram-text: #ffffff;
+  --color-telegram-subtext: #8e9fb3;
+
+  --color-telegram-border: rgba(255, 255, 255, 0.10);
+  --color-telegram-hover: rgba(255, 255, 255, 0.05);
+}
+
+/* ---- Classic Light — the pre-editorial light theme ---------------------- */
+:root[data-theme="classic-light"] {
+  --color-telegram-bg: #f0f2f5;
+  --color-telegram-surface: #ffffff;
+  --color-telegram-elevated: #ffffff;
+  --color-telegram-deep: #f0f2f5;
+
+  --color-telegram-primary: #e69500;
+  --color-telegram-primary-hover: #cc8400;
+  --color-telegram-on-primary: #000000;
+  --color-telegram-secondary: #2481cc;
+
+  --color-telegram-text: #1a1a1a;
+  --color-telegram-subtext: #65676b;
+
+  --color-telegram-border: rgba(0, 0, 0, 0.10);
+  --color-telegram-hover: rgba(0, 0, 0, 0.03);
 }
 
 body,

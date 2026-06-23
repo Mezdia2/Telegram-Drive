@@ -2,6 +2,16 @@ import { createContext, useContext, useState, useEffect, ReactNode, useCallback 
 import { load } from '@tauri-apps/plugin-store';
 import { SupportedLanguage } from '../i18n/languages';
 
+export interface ProxyProfile {
+    id: string;
+    name: string;
+    type: 'socks5' | 'http' | 'https';
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+}
+
 export interface Settings {
     viewMode: 'grid' | 'list';
     sidebarCollapsed: boolean;
@@ -18,6 +28,8 @@ export interface Settings {
     proxyPort: number;
     proxyUsername: string;
     proxyPassword: string;   // SOCKS5
+    proxyProfiles: ProxyProfile[];
+    selectedProxyId: string | null;
 
     // ── VPN Optimizer (master toggle) ─────────────────────
     vpnMode: boolean;
@@ -65,6 +77,8 @@ const defaultSettings: Settings = {
     proxyPort: 1080,
     proxyUsername: '',
     proxyPassword: '',
+    proxyProfiles: [],
+    selectedProxyId: null,
 
     // VPN Optimizer — off by default (preserves existing behaviour)
     vpnMode: false,
@@ -95,11 +109,42 @@ const defaultSettings: Settings = {
 interface SettingsContextType {
     settings: Settings;
     updateSetting: <K extends keyof Settings>(key: K, value: Settings[K]) => void;
+    updateSettings: (patch: Partial<Settings> | ((prev: Settings) => Partial<Settings>)) => void;
     resetSettings: () => void;
     isLoaded: boolean;
 }
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
+
+function normalizeProxyType(value: unknown): ProxyProfile['type'] {
+    return value === 'http' || value === 'https' || value === 'socks5' ? value : 'socks5';
+}
+
+function normalizeProxyPort(value: unknown, fallback = 1080) {
+    const port = typeof value === 'number' ? value : Number(value);
+    if (!Number.isFinite(port)) return fallback;
+    return Math.max(1, Math.min(65535, Math.round(port)));
+}
+
+function proxyDisplayName(type: ProxyProfile['type'], host: string, port: number) {
+    return `${type.toUpperCase()} ${host}:${port}`;
+}
+
+function normalizeProxyProfile(raw: Partial<ProxyProfile>, index: number): ProxyProfile | null {
+    const host = typeof raw.host === 'string' ? raw.host.trim() : '';
+    if (!host) return null;
+    const type = normalizeProxyType(raw.type);
+    const port = normalizeProxyPort(raw.port);
+    return {
+        id: raw.id || `proxy-${Date.now()}-${index}`,
+        name: (raw.name || proxyDisplayName(type, host, port)).trim(),
+        type,
+        host,
+        port,
+        username: raw.username || '',
+        password: raw.password || '',
+    };
+}
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
     const [settings, setSettings] = useState<Settings>(defaultSettings);
@@ -117,6 +162,46 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
                     // Backward compat: map old 'mtproto' proxyType to 'socks5'
                     if ((merged.proxyType as string) === 'mtproto') {
                         merged.proxyType = 'socks5';
+                    }
+                    merged.proxyType = normalizeProxyType(merged.proxyType);
+                    merged.proxyPort = normalizeProxyPort(merged.proxyPort);
+
+                    const savedProfiles = Array.isArray((saved as Partial<Settings>).proxyProfiles)
+                        ? (saved as Partial<Settings>).proxyProfiles || []
+                        : [];
+                    const profiles = savedProfiles
+                        .map((profile, index) => normalizeProxyProfile(profile, index))
+                        .filter((profile): profile is ProxyProfile => Boolean(profile));
+
+                    if (profiles.length === 0 && merged.proxyHost.trim()) {
+                        profiles.push({
+                            id: 'legacy-proxy',
+                            name: proxyDisplayName(merged.proxyType, merged.proxyHost.trim(), merged.proxyPort),
+                            type: merged.proxyType,
+                            host: merged.proxyHost.trim(),
+                            port: merged.proxyPort,
+                            username: merged.proxyUsername,
+                            password: merged.proxyPassword,
+                        });
+                    }
+
+                    merged.proxyProfiles = profiles;
+                    merged.selectedProxyId = profiles.some(profile => profile.id === merged.selectedProxyId)
+                        ? merged.selectedProxyId
+                        : profiles[0]?.id || null;
+
+                    const activeProxy = profiles.find(profile => profile.id === merged.selectedProxyId);
+                    if (activeProxy) {
+                        merged.proxyType = activeProxy.type;
+                        merged.proxyHost = activeProxy.host;
+                        merged.proxyPort = activeProxy.port;
+                        merged.proxyUsername = activeProxy.username;
+                        merged.proxyPassword = activeProxy.password;
+                    } else {
+                        merged.proxyEnabled = false;
+                        merged.proxyHost = '';
+                        merged.proxyUsername = '';
+                        merged.proxyPassword = '';
                     }
                     setSettings(merged);
                 }
@@ -147,13 +232,22 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
         });
     }, [persistSettings]);
 
+    const updateSettings = useCallback((patch: Partial<Settings> | ((prev: Settings) => Partial<Settings>)) => {
+        setSettings(prev => {
+            const patchValue = typeof patch === 'function' ? patch(prev) : patch;
+            const next = { ...prev, ...patchValue };
+            persistSettings(next);
+            return next;
+        });
+    }, [persistSettings]);
+
     const resetSettings = useCallback(() => {
         setSettings(defaultSettings);
         persistSettings(defaultSettings);
     }, [persistSettings]);
 
     return (
-        <SettingsContext.Provider value={{ settings, updateSetting, resetSettings, isLoaded }}>
+        <SettingsContext.Provider value={{ settings, updateSetting, updateSettings, resetSettings, isLoaded }}>
             {children}
         </SettingsContext.Provider>
     );

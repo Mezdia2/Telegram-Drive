@@ -24,6 +24,7 @@ import { ShareDialog } from './dashboard/ShareDialog';
 import { RenameFolderModal } from './dashboard/RenameFolderModal';
 import { RenameFileModal } from './dashboard/RenameFileModal';
 import { RemoteUploadModal } from './dashboard/RemoteUploadModal';
+import { ProxyControl } from './dashboard/ProxyControl';
 import { Link, Copy, Check, X, Loader2, Share2 } from 'lucide-react';
 
 // Hooks
@@ -647,7 +648,6 @@ export function Dashboard({ onLogout }: { onLogout: () => void }) {
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
                     onSettingsClick={() => { setSettingsTab('general'); setShowSettings(true); }}
-                    onProxySettings={() => { setSettingsTab('proxy'); setShowSettings(true); }}
                     onRemoteUploadClick={() => setShowRemoteUpload(true)}
                 />
                 {searchTerm.length > 2 && (
@@ -683,6 +683,8 @@ export function Dashboard({ onLogout }: { onLogout: () => void }) {
                     onCardScaleChange={setCardScale}
                 />
             </main>
+
+            <ProxyControl onOpenSettings={() => { setSettingsTab('proxy'); setShowSettings(true); }} />
 
             {previewFile && (
                 <PreviewModal

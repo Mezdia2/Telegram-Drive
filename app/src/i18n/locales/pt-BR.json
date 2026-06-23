@@ -47,7 +47,22 @@
     "files": "Arquivos",
     "transfers": "Transferências"
   },
+  "themes": {
+    "telegram_dark": "Telegram Dark",
+    "telegram_light": "Telegram Light",
+    "mezdia_dark": "Mezdia Dark",
+    "mezdia_light": "Mezdia Light",
+    "classic_dark": "Classic Dark",
+    "classic_light": "Classic Light"
+  },
   "settings": {
+    "appearance": "Appearance",
+    "color_mode": "Color Mode",
+    "color_mode_desc": "Active light or dark mode",
+    "dark_mode_theme": "Dark Mode Theme",
+    "dark_mode_theme_desc": "Theme used when dark mode is active",
+    "light_mode_theme": "Light Mode Theme",
+    "light_mode_theme_desc": "Theme used when light mode is active",
     "concurrent_uploads": "Envios simultâneos",
     "concurrent_downloads": "Downloads simultâneos",
     "zip_before_upload": "Compactar pastas antes do envio",
