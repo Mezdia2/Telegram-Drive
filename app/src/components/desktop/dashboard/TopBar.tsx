@@ -1,6 +1,5 @@
 import { HardDrive, LayoutGrid, List, Sun, Moon, Settings, Share2, X, Search, ChevronRight, Globe } from 'lucide-react';
 import { useTheme } from '../../../context/ThemeContext';
-import { ProxyControl } from './ProxyControl';
 import { useTranslation } from 'react-i18next';
 
 interface TopBarProps {
@@ -17,7 +16,6 @@ interface TopBarProps {
     searchTerm: string;
     onSearchChange: (term: string) => void;
     onSettingsClick: () => void;
-    onProxySettings: () => void;
     onRemoteUploadClick: () => void;
 }
 
@@ -34,7 +32,7 @@ function Tip({ children }: { children: React.ReactNode }) {
 export function TopBar({
     currentFolderName, selectedIds, onShowMoveModal, onBulkDownload, onBulkDelete, onBulkShare,
     onDownloadFolder, onClearSelection, viewMode, setViewMode, searchTerm, onSearchChange, onSettingsClick,
-    onProxySettings, onRemoteUploadClick
+    onRemoteUploadClick
 }: TopBarProps) {
     const { theme, toggleTheme } = useTheme();
     const { t } = useTranslation();
@@ -95,8 +93,6 @@ export function TopBar({
                 </button>
 
                 <div className="w-px h-5 bg-telegram-border mx-1" />
-
-                <ProxyControl onOpenSettings={onProxySettings} />
 
                 <button onClick={onSettingsClick} className={iconBtn} title={t('common.settings')}>
                     <Settings className="w-5 h-5" />
