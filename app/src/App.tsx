@@ -46,7 +46,7 @@ function AppContent() {
     if (!isLoaded) return;
     i18n.changeLanguage(settings.language);
     document.documentElement.lang = settings.language;
-    document.documentElement.dir = settings.language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = settings.language === 'ar' || settings.language === 'fa' ? 'rtl' : 'ltr';
   }, [settings.language, isLoaded, i18n]);
 
   // Performance mode: auto-enable when user has prefers-reduced-motion
