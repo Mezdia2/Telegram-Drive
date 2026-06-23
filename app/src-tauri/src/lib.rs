@@ -653,6 +653,9 @@ pub fn run() {
             commands::cmd_auth_request_code,
             commands::cmd_auth_sign_in,
             commands::cmd_auth_check_password,
+            commands::cmd_get_auth_credentials,
+            commands::cmd_save_auth_credentials,
+            commands::cmd_clear_auth_credentials,
             commands::cmd_get_files,
             commands::cmd_upload_file,
             commands::initiate_upload,
@@ -758,4 +761,3 @@ pub fn run() {
         }
     });
 }
-

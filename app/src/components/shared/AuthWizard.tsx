@@ -8,6 +8,10 @@ import { open } from '@tauri-apps/plugin-shell';
 import { QRCodeSVG } from 'qrcode.react';
 
 type Step = "setup" | "phone" | "code" | "password";
+type StoredAuthCredentials = {
+    api_id: string;
+    api_hash: string;
+};
 
 function AuthThemeToggle() {
     const { theme, toggleTheme } = useTheme();
@@ -25,7 +29,7 @@ function AuthThemeToggle() {
         </button>
     );
 }
-export function AuthWizard({ onLogin }: { onLogin: () => void }) {
+export function AuthWizard({ onLogin, offlineMessage }: { onLogin: () => void; offlineMessage?: string }) {
     const isBrowser = typeof window !== 'undefined' && !('__TAURI_INTERNALS__' in window);
 
     if (isBrowser) {
@@ -86,13 +90,25 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
     useEffect(() => {
         const initStore = async () => {
             try {
+                const saved = await invoke<StoredAuthCredentials | null>('cmd_get_auth_credentials');
+                if (saved?.api_id && saved?.api_hash) {
+                    setApiId(saved.api_id);
+                    setApiHash(saved.api_hash);
+                    return;
+                }
+
                 const store = await load('config.json');
                 const savedId = await store.get<string>('api_id');
                 const savedHash = await store.get<string>('api_hash');
-
                 if (savedId && savedHash) {
                     setApiId(savedId);
                     setApiHash(savedHash);
+                    await invoke('cmd_save_auth_credentials', {
+                        apiId: savedId,
+                        apiHash: savedHash,
+                    });
+                    await store.delete('api_hash');
+                    await store.save();
                 }
             } catch {
                 // config not found, starting fresh
@@ -103,9 +119,14 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
 
     const saveCredentials = async () => {
         try {
+            await invoke('cmd_save_auth_credentials', {
+                apiId,
+                apiHash,
+            });
+
             const store = await load('config.json');
             await store.set('api_id', apiId);
-            await store.set('api_hash', apiHash);
+            await store.delete('api_hash');
             await store.save();
         } catch {
             // store write failure, non-critical
@@ -307,6 +328,20 @@ export function AuthWizard({ onLogin }: { onLogin: () => void }) {
                         </motion.div>
                     ) : (
                         <>
+                            {offlineMessage && apiId && (
+                                <motion.div
+                                    key="offline"
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="mb-5 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-start gap-3"
+                                >
+                                    <div className="w-3 h-3 border-2 border-blue-300 border-t-transparent rounded-full animate-spin mt-0.5 shrink-0" />
+                                    <div className="space-y-1">
+                                        <p className="text-blue-200 text-sm leading-snug">{offlineMessage}</p>
+                                        <p className="text-white/45 text-xs leading-snug">Your saved session is being kept locally. Reconnect will continue automatically.</p>
+                                    </div>
+                                </motion.div>
+                            )}
 
 
                             {step === "setup" && (

@@ -7,6 +7,7 @@ import { ErrorBoundary } from "./components/shared/ErrorBoundary";
 import { UpdateBanner } from "./components/shared/UpdateBanner";
 import { useUpdateCheck } from "./hooks/useUpdateCheck";
 import { usePlatform } from "./hooks/usePlatform";
+import { useNetworkStatus } from "./hooks/useNetworkStatus";
 import "./App.css";
 
 const DesktopDashboard = React.lazy(() => import("./components/desktop/DesktopDashboard").then(m => ({ default: m.Dashboard })));
@@ -25,14 +26,20 @@ import { useTranslation } from "react-i18next";
 const queryClient = new QueryClient();
 
 type AuthStatus = "loading" | "authenticated" | "unauthenticated";
+type StoredAuthCredentials = {
+  api_id: string;
+  api_hash: string;
+};
 
 function AppContent() {
   const [authStatus, setAuthStatus] = useState<AuthStatus>("loading");
+  const [restoreMessage, setRestoreMessage] = useState("");
   const { theme } = useTheme();
   const { available, version, downloading, progress, downloadAndInstall, dismissUpdate } = useUpdateCheck();
   const { isMobile } = usePlatform();
   const { settings, updateSetting, isLoaded } = useSettings();
   const { i18n } = useTranslation();
+  const networkIsOnline = useNetworkStatus();
 
   // Handle active language and RTL direction changes
   useEffect(() => {
@@ -71,10 +78,24 @@ function AppContent() {
   // This is the SINGLE source of truth for the initial connection.
   // useTelegramConnection (inside Dashboard) no longer calls cmd_connect on mount.
   useEffect(() => {
+    let cancelled = false;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const retryLater = () => {
+      retryTimer = setTimeout(checkSession, 5000);
+    };
+
     const checkSession = async () => {
+      if (cancelled) return;
+      if (!isLoaded) return;
+
+      const noProxyConfigured = !settings.proxyEnabled || !settings.proxyHost.trim();
+
       try {
+        const credentials = await invoke<StoredAuthCredentials | null>("cmd_get_auth_credentials");
         const store = await load("config.json");
-        const savedId = await store.get<string>("api_id");
+        const legacySavedId = await store.get<string>("api_id");
+        const savedId = credentials?.api_id || legacySavedId;
 
         if (!savedId) {
           setAuthStatus("unauthenticated");
@@ -87,28 +108,79 @@ function AppContent() {
           return;
         }
 
-        // Initialize the client with the saved API ID
+        const networkAvailable = await invoke<boolean>("cmd_is_network_available").catch(() => false);
+        if (!networkAvailable) {
+          setAuthStatus("unauthenticated");
+          setRestoreMessage(noProxyConfigured
+            ? "No connection to Telegram. Configure a proxy if Telegram is blocked, then reconnect."
+            : "No connection to Telegram. Waiting for connectivity..."
+          );
+          retryLater();
+          return;
+        }
+
+        setRestoreMessage("Reconnecting to Telegram...");
         await invoke("cmd_connect", { apiId });
 
-        // Verify the session is still valid with Telegram servers
         const ok = await invoke<boolean>("cmd_check_connection");
-        setAuthStatus(ok ? "authenticated" : "unauthenticated");
-      } catch (err) {
-        console.warn("Session restore failed, showing login:", err);
-        // Session file is corrupt or revoked — clean up and show login
-        try {
-          const store = await load("config.json");
-          await store.delete("api_id");
-          await store.save();
-        } catch {
-          // best-effort cleanup
+        if (ok) {
+          setAuthStatus("authenticated");
+          return;
         }
+
         setAuthStatus("unauthenticated");
+        setRestoreMessage("Unable to verify the saved session. Retrying...");
+        retryLater();
+      } catch (err) {
+        console.warn("Session restore failed, retrying:", err);
+        setAuthStatus("unauthenticated");
+        setRestoreMessage(noProxyConfigured
+          ? "Cannot reach Telegram. Configure a proxy if Telegram is blocked, then reconnect."
+          : "Cannot reach Telegram. Retrying..."
+        );
+        retryLater();
       }
     };
 
     checkSession();
-  }, []);
+
+    return () => {
+      cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+    };
+  }, [isLoaded, settings.proxyEnabled, settings.proxyHost]);
+
+  // Retry immediately when the lightweight network probe flips back online.
+  useEffect(() => {
+    if (authStatus !== "unauthenticated" || !networkIsOnline || !isLoaded) return;
+
+    const checkSession = async () => {
+      try {
+        const credentials = await invoke<StoredAuthCredentials | null>("cmd_get_auth_credentials");
+        const store = await load("config.json");
+        const legacySavedId = await store.get<string>("api_id");
+        const savedId = credentials?.api_id || legacySavedId;
+
+        if (!savedId) {
+          return;
+        }
+
+        const apiId = parseInt(savedId, 10);
+        if (isNaN(apiId)) {
+          return;
+        }
+
+        setRestoreMessage("Reconnecting to Telegram...");
+        await invoke("cmd_connect", { apiId });
+        const ok = await invoke<boolean>("cmd_check_connection");
+        if (ok) setAuthStatus("authenticated");
+      } catch (err) {
+        console.warn("Reconnect attempt failed:", err);
+      }
+    };
+
+    checkSession();
+  }, [authStatus, networkIsOnline, isLoaded]);
 
   // Clean up PDF preview cache files on close/beforeunload
   useEffect(() => {
@@ -164,7 +236,10 @@ function AppContent() {
         </Suspense>
       )}
       {authStatus === "unauthenticated" && (
-        <AuthWizard onLogin={() => setAuthStatus("authenticated")} />
+        <AuthWizard
+          onLogin={() => setAuthStatus("authenticated")}
+          offlineMessage={restoreMessage}
+        />
       )}
     </main>
   );
