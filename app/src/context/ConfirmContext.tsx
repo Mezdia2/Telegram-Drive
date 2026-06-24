@@ -42,11 +42,11 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             {children}
             {isOpen && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-[#1c1c1c] border border-white/10 rounded-xl p-6 w-96 shadow-2xl animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
-                        <h3 className="text-lg font-medium text-white mb-2">{options.title}</h3>
+                    <div className="bg-telegram-surface border border-telegram-border rounded-xl p-6 w-96 shadow-2xl animate-in zoom-in-95" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-lg font-medium text-telegram-text mb-2">{options.title}</h3>
                         <p className="text-telegram-subtext text-sm mb-6 whitespace-pre-line">{options.message}</p>
                         <div className="flex justify-end gap-3">
-                            <button onClick={handleCancel} className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-white/5 text-telegram-subtext transition">
+                            <button onClick={handleCancel} className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-telegram-hover text-telegram-subtext transition">
                                 {options.cancelText || 'Cancel'}
                             </button>
                             <button

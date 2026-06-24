@@ -1007,22 +1007,22 @@ export default function MobileDashboard({ onLogout }: { onLogout?: () => void })
           onClick={() => setBulkShareLinks(null)}
         >
           <div
-            className="w-full max-w-lg bg-[#1c1c1e] border border-white/10 rounded-t-3xl p-5 pb-8 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[70vh] flex flex-col"
+            className="w-full max-w-lg bg-telegram-surface border border-telegram-border rounded-t-3xl p-5 pb-8 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[70vh] flex flex-col"
             onClick={e => e.stopPropagation()}
           >
             {/* Drag handle */}
             <div className="flex justify-center mb-4">
-              <div className="w-10 h-1 rounded-full bg-white/20" />
+              <div className="w-10 h-1 rounded-full bg-telegram-border" />
             </div>
 
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+              <h3 className="text-sm font-bold text-telegram-text flex items-center gap-2">
                 <Link className="w-4 h-4 text-telegram-primary" />
                 {bulkShareLinks.length} Share Link{bulkShareLinks.length !== 1 ? 's' : ''}
               </h3>
               <button
                 onClick={() => setBulkShareLinks(null)}
-                className="p-1.5 rounded-lg hover:bg-white/10 text-telegram-subtext"
+                className="p-1.5 rounded-lg hover:bg-telegram-hover text-telegram-subtext"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1040,22 +1040,22 @@ export default function MobileDashboard({ onLogout }: { onLogout?: () => void })
                   return (
                     <div
                       key={file.id}
-                      className="p-3 rounded-xl bg-white/5 border border-white/5 space-y-2"
+                      className="p-3 rounded-xl bg-telegram-hover/40 border border-telegram-border/60 space-y-2"
                     >
-                      <p className="text-xs font-semibold text-white truncate">{file.name}</p>
+                      <p className="text-xs font-semibold text-telegram-text truncate">{file.name}</p>
                       <div className="flex gap-2">
                         <input
                           type="text"
                           readOnly
                           value={link}
-                          className="flex-1 bg-black/30 border border-white/10 rounded-lg px-2.5 py-1.5 text-[11px] text-telegram-subtext focus:outline-none select-all truncate"
+                          className="flex-1 bg-telegram-bg border border-telegram-border rounded-lg px-2.5 py-1.5 text-[11px] text-telegram-text focus:outline-none select-all truncate"
                         />
                         <button
                           onClick={() => handleCopyBulkLink(link)}
                           className={`px-2.5 py-1.5 rounded-lg flex items-center justify-center transition-all flex-shrink-0 ${
                             isCopied
                               ? 'bg-emerald-500 border-emerald-500 text-white'
-                              : 'bg-white/10 border border-white/10 text-telegram-subtext hover:bg-white/20'
+                              : 'bg-telegram-hover border border-telegram-border text-telegram-subtext hover:bg-telegram-hover/80'
                           }`}
                         >
                           {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -1077,7 +1077,7 @@ export default function MobileDashboard({ onLogout }: { onLogout?: () => void })
 
             <button
               onClick={() => setBulkShareLinks(null)}
-              className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold bg-white/5 text-telegram-subtext hover:bg-white/10 border border-white/5 transition-all duration-200 active:scale-[0.98] flex-shrink-0"
+              className="w-full mt-3 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-semibold bg-telegram-hover/60 text-telegram-subtext hover:bg-telegram-hover border border-telegram-border transition-all duration-200 active:scale-[0.98] flex-shrink-0"
             >
               Done
             </button>
