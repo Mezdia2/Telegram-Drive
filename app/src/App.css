@@ -194,6 +194,33 @@ body,
   color: var(--color-telegram-on-primary);
 }
 
+/* Sonner renders outside most app panels, so pin its surface to the active
+   palette tokens instead of Sonner's built-in light/dark colours. */
+[data-sonner-toast] {
+  background: var(--color-telegram-surface) !important;
+  color: var(--color-telegram-text) !important;
+  border-color: var(--color-telegram-border) !important;
+}
+
+[data-sonner-toast] [data-title] {
+  color: var(--color-telegram-text) !important;
+}
+
+[data-sonner-toast] [data-description],
+[data-sonner-toast] [data-content] {
+  color: var(--color-telegram-subtext) !important;
+}
+
+[data-sonner-toast] [data-button] {
+  background: var(--color-telegram-primary) !important;
+  color: var(--color-telegram-on-primary) !important;
+}
+
+[data-sonner-toast] [data-cancel] {
+  background: var(--color-telegram-hover) !important;
+  color: var(--color-telegram-text) !important;
+}
+
 /* ----------------------------------------------------------------------------
    Editorial type helpers
    -------------------------------------------------------------------------- */

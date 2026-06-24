@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DownloadCloud, Trash2, Pencil, CheckSquare, X, Check, FolderInput, MoreVertical, Eye, Link, Copy } from 'lucide-react';
 import { FileTypeIcon } from '../shared/FileTypeIcon';
 import { ActionPopover, ActionItem } from './ActionPopover';
@@ -26,6 +27,7 @@ interface TouchFileListProps {
 }
 
 export function TouchFileList({ files, isLoading, onDownload, onDelete, onPreview, onRename, selectedIds, onToggleSelection, onSelectAll, onClearSelection, onBulkDelete, onBulkDownload, onBulkMove, onBulkShare, onShare, onCopyTelegramLink, folders, activeFolderId }: TouchFileListProps) {
+  const { t } = useTranslation();
   const [selectionMode, setSelectionMode] = useState(false);
   const [showMovePicker, setShowMovePicker] = useState(false);
   const [actionMenuFile, setActionMenuFile] = useState<TelegramFile | null>(null);
@@ -131,9 +133,9 @@ export function TouchFileList({ files, isLoading, onDownload, onDelete, onPrevie
           <div className="p-4 rounded-2xl bg-telegram-hover/10 text-telegram-subtext border border-telegram-border/10">
             📁
           </div>
-          <h4 className="text-sm font-bold text-telegram-text">This folder is empty</h4>
+          <h4 className="text-sm font-bold text-telegram-text">{t('files.empty_folder')}</h4>
           <p className="text-xs text-telegram-subtext max-w-xs leading-relaxed">
-            Upload files or synchronise folders to begin managing content.
+            {t('files.start_managing')}
           </p>
         </div>
       )}
@@ -221,14 +223,14 @@ export function TouchFileList({ files, isLoading, onDownload, onDelete, onPrevie
               onClick={() => setShowMovePicker(false)}
             >
               <div
-                className="bg-[#1c1c1c] border border-white/10 rounded-2xl p-5 w-[300px] max-h-[60vh] flex flex-col shadow-2xl"
+                className="bg-telegram-surface border border-telegram-border rounded-2xl p-5 w-[300px] max-h-[60vh] flex flex-col shadow-2xl"
                 onClick={e => e.stopPropagation()}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-bold text-white">Move {selectedIds.length} file{selectedIds.length !== 1 ? 's' : ''} to...</h3>
+                  <h3 className="text-sm font-bold text-telegram-text">Move {selectedIds.length} file{selectedIds.length !== 1 ? 's' : ''} to...</h3>
                   <button
                     onClick={() => setShowMovePicker(false)}
-                    className="p-1.5 rounded-lg hover:bg-white/10 text-telegram-subtext"
+                    className="p-1.5 rounded-lg hover:bg-telegram-hover text-telegram-subtext"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -240,7 +242,7 @@ export function TouchFileList({ files, isLoading, onDownload, onDelete, onPrevie
                     className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
                       activeFolderId === null
                         ? 'bg-telegram-primary/10 text-telegram-primary'
-                        : 'text-telegram-subtext hover:bg-white/5'
+                        : 'text-telegram-subtext hover:bg-telegram-hover'
                     }`}
                   >
                     📁 Saved Messages
@@ -251,7 +253,7 @@ export function TouchFileList({ files, isLoading, onDownload, onDelete, onPrevie
                       <button
                         key={folder.id}
                         onClick={() => { onBulkMove(folder.id); setShowMovePicker(false); }}
-                        className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold text-telegram-subtext hover:bg-white/5 transition-all duration-200"
+                        className="w-full text-left px-3.5 py-2.5 rounded-xl text-xs font-semibold text-telegram-subtext hover:bg-telegram-hover transition-all duration-200"
                       >
                         📁 {folder.name}
                       </button>

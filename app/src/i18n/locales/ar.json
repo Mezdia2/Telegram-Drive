@@ -38,12 +38,12 @@
     "size": "الحجم",
     "date": "التاريخ",
     "play": "تشغيل",
-    "start": "Start",
-    "settings": "Settings",
-    "light_mode": "Light Mode",
-    "dark_mode": "Dark Mode",
-    "switch_light": "Switch to Light Mode",
-    "switch_dark": "Switch to Dark Mode",
+    "start": "بدء",
+    "settings": "الإعدادات",
+    "light_mode": "الوضع الفاتح",
+    "dark_mode": "الوضع الداكن",
+    "switch_light": "التبديل إلى الوضع الفاتح",
+    "switch_dark": "التبديل إلى الوضع الداكن",
     "files": "الملفات",
     "transfers": "عمليات النقل"
   },
@@ -268,7 +268,13 @@
     "please_enter_url": "الرجاء إدخال رابط",
     "url_must_start": "يجب أن يبدأ الرابط بـ http:// أو https://",
     "transfers_queue": "طابور عمليات النقل",
-    "transfers_queue_desc": "يتم تنظيم عمليات التنزيل والرفع بأمان في الخلفية."
+    "transfers_queue_desc": "يتم تنظيم عمليات التنزيل والرفع بأمان في الخلفية.",
+    "sort_by": "ترتيب حسب",
+    "empty_folder": "هذا المجلد فارغ",
+    "empty_folder_desc": "اسحب الملفات وأفلتها هنا، أو انقر على الزر أدناه للرفع من جهاز الكمبيوتر الخاص بك.",
+    "upload_files": "رفع الملفات",
+    "search_tip": "نصيحة: استخدم {{shortcut}} للبحث",
+    "start_managing": "قم برفع الملفات أو مزامنة المجلدات للبدء في إدارة المحتوى."
   },
   "archive": {
     "archive_viewer": "عارض الأرشيف",

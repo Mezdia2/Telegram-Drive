@@ -38,12 +38,12 @@
     "size": "Boyut",
     "date": "Tarih",
     "play": "Oynat",
-    "start": "Start",
-    "settings": "Settings",
-    "light_mode": "Light Mode",
-    "dark_mode": "Dark Mode",
-    "switch_light": "Switch to Light Mode",
-    "switch_dark": "Switch to Dark Mode",
+    "start": "Başlat",
+    "settings": "Ayarlar",
+    "light_mode": "Açık Mod",
+    "dark_mode": "Koyu Mod",
+    "switch_light": "Açık Moda Geç",
+    "switch_dark": "Koyu Moda Geç",
     "files": "Dosyalar",
     "transfers": "Transferler"
   },
@@ -268,7 +268,13 @@
     "please_enter_url": "Lütfen bir URL girin",
     "url_must_start": "URL, http:// veya https:// ile başlamalıdır",
     "transfers_queue": "Transfer Sırası",
-    "transfers_queue_desc": "İndirmeler ve yüklemeler arka planda güvenle sıraya alınır."
+    "transfers_queue_desc": "İndirmeler ve yüklemeler arka planda güvenle sıraya alınır.",
+    "sort_by": "Sıralama ölçütü",
+    "empty_folder": "Bu klasör boş",
+    "empty_folder_desc": "Dosyaları buraya sürükleyip bırakın veya bilgisayarınızdan yüklemek için aşağıdaki düğmeye tıklayın.",
+    "upload_files": "Dosya Yükle",
+    "search_tip": "İpucu: Arama yapmak için {{shortcut}} kullanın",
+    "start_managing": "İçerik yönetimine başlamak için dosya yükleyin veya klasörleri senkronize edin."
   },
   "archive": {
     "archive_viewer": "Arşiv Görüntüleyici",

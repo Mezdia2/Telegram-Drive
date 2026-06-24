@@ -38,12 +38,12 @@
     "size": "Größe",
     "date": "Datum",
     "play": "Abspielen",
-    "start": "Start",
-    "settings": "Settings",
-    "light_mode": "Light Mode",
-    "dark_mode": "Dark Mode",
-    "switch_light": "Switch to Light Mode",
-    "switch_dark": "Switch to Dark Mode",
+    "start": "Starten",
+    "settings": "Einstellungen",
+    "light_mode": "Hellmodus",
+    "dark_mode": "Dunkelmodus",
+    "switch_light": "Zum Hellmodus wechseln",
+    "switch_dark": "Zum Dunkelmodus wechseln",
     "files": "Dateien",
     "transfers": "Übertragungen"
   },
@@ -268,7 +268,13 @@
     "please_enter_url": "Bitte geben Sie eine URL ein",
     "url_must_start": "Die URL muss mit http:// oder https:// beginnen",
     "transfers_queue": "Übertragungswarteschlange",
-    "transfers_queue_desc": "Downloads und Uploads werden im Hintergrund verwaltet."
+    "transfers_queue_desc": "Downloads und Uploads werden im Hintergrund verwaltet.",
+    "sort_by": "Sortieren nach",
+    "empty_folder": "Dieser Ordner ist leer",
+    "empty_folder_desc": "Ziehen Sie Dateien hierher, oder klicken Sie auf die Schaltfläche unten, um von Ihrem Computer hochzuladen.",
+    "upload_files": "Dateien Hochladen",
+    "search_tip": "Tipp: Verwenden Sie {{shortcut}} zum Suchen",
+    "start_managing": "Laden Sie Dateien hoch oder synchronisieren Sie Ordner, um mit der Verwaltung zu beginnen."
   },
   "archive": {
     "archive_viewer": "Archiv-Viewer",

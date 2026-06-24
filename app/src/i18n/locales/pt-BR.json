@@ -38,12 +38,12 @@
     "size": "Tamanho",
     "date": "Data",
     "play": "Reproduzir",
-    "start": "Start",
-    "settings": "Settings",
-    "light_mode": "Light Mode",
-    "dark_mode": "Dark Mode",
-    "switch_light": "Switch to Light Mode",
-    "switch_dark": "Switch to Dark Mode",
+    "start": "Iniciar",
+    "settings": "Configurações",
+    "light_mode": "Modo Claro",
+    "dark_mode": "Modo Escuro",
+    "switch_light": "Mudar para Modo Claro",
+    "switch_dark": "Mudar para Modo Escuro",
     "files": "Arquivos",
     "transfers": "Transferências"
   },
@@ -268,7 +268,13 @@
     "please_enter_url": "Por favor, insira uma URL",
     "url_must_start": "A URL deve começar com http:// ou https://",
     "transfers_queue": "Fila de Transferências",
-    "transfers_queue_desc": "Downloads e uploads são gerenciados com segurança em segundo plano."
+    "transfers_queue_desc": "Downloads e uploads são gerenciados com segurança em segundo plano.",
+    "sort_by": "Ordenar por",
+    "empty_folder": "Esta pasta está vazia",
+    "empty_folder_desc": "Arraste e solte arquivos aqui, ou clique no botão abaixo para fazer upload do seu computador.",
+    "upload_files": "Enviar Arquivos",
+    "search_tip": "Dica: Use {{shortcut}} para pesquisar",
+    "start_managing": "Envie arquivos ou sincronize pastas para começar a gerenciar conteúdo."
   },
   "archive": {
     "archive_viewer": "Visualizador de arquivos compactados",

@@ -217,7 +217,17 @@ function AppContent() {
         onUpdate={downloadAndInstall}
         onDismiss={dismissUpdate}
       />
-      <Toaster theme={theme} position="bottom-center" />
+      <Toaster
+        theme={theme}
+        position="bottom-center"
+        toastOptions={{
+          style: {
+            background: "var(--color-telegram-surface)",
+            color: "var(--color-telegram-text)",
+            border: "1px solid var(--color-telegram-border)",
+          },
+        }}
+      />
       {authStatus === "authenticated" && (
         <Suspense fallback={
           <div className="h-screen w-screen flex flex-col items-center justify-center bg-telegram-bg">

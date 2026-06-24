@@ -214,7 +214,7 @@ export function FileExplorer({
                 <>
 
                     <div className="flex items-center gap-2 mb-4 text-xs text-telegram-subtext">
-                        <span>Sort by:</span>
+                        <span>{t('files.sort_by')}:</span>
                         <button
                             onClick={() => handleSort('name')}
                             className={`px-2 py-1 rounded flex items-center gap-1 hover:bg-white/5 ${sortField === 'name' ? 'text-telegram-primary' : ''}`}

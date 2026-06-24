@@ -38,12 +38,12 @@
     "size": "크기",
     "date": "날짜",
     "play": "재생",
-    "start": "Start",
-    "settings": "Settings",
-    "light_mode": "Light Mode",
-    "dark_mode": "Dark Mode",
-    "switch_light": "Switch to Light Mode",
-    "switch_dark": "Switch to Dark Mode",
+    "start": "시작",
+    "settings": "설정",
+    "light_mode": "라이트 모드",
+    "dark_mode": "다크 모드",
+    "switch_light": "라이트 모드로 전환",
+    "switch_dark": "다크 모드로 전환",
     "files": "파일",
     "transfers": "전송"
   },
@@ -268,7 +268,13 @@
     "please_enter_url": "URL을 입력하세요",
     "url_must_start": "URL은 http:// 또는 https://로 시작해야 합니다",
     "transfers_queue": "전송 대기열",
-    "transfers_queue_desc": "다운로드 및 업로드가 백그라운드에서 안전하게 관리됩니다."
+    "transfers_queue_desc": "다운로드 및 업로드가 백그라운드에서 안전하게 관리됩니다.",
+    "sort_by": "정렬 기준",
+    "empty_folder": "이 폴더는 비어 있습니다",
+    "empty_folder_desc": "파일을 여기로 끌어다 놓거나 아래 버튼을 클릭하여 컴퓨터에서 업로드하세요.",
+    "upload_files": "파일 업로드",
+    "search_tip": "팁: {{shortcut}}를 사용하여 검색하세요",
+    "start_managing": "파일을 업로드하거나 폴더를 동기화하여 콘텐츠 관리를 시작하세요."
   },
   "archive": {
     "archive_viewer": "압축 파일 뷰어",
