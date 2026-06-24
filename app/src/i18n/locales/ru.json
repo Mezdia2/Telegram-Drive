@@ -38,12 +38,12 @@
     "size": "Размер",
     "date": "Дата",
     "play": "Воспроизвести",
-    "start": "Start",
-    "settings": "Settings",
-    "light_mode": "Light Mode",
-    "dark_mode": "Dark Mode",
-    "switch_light": "Switch to Light Mode",
-    "switch_dark": "Switch to Dark Mode",
+    "start": "Начать",
+    "settings": "Настройки",
+    "light_mode": "Светлая тема",
+    "dark_mode": "Тёмная тема",
+    "switch_light": "Переключить на светлую тему",
+    "switch_dark": "Переключить на тёмную тему",
     "files": "Файлы",
     "transfers": "Передачи"
   },
@@ -268,7 +268,13 @@
     "please_enter_url": "Пожалуйста, введите URL",
     "url_must_start": "URL должен начинаться с http:// или https://",
     "transfers_queue": "Очередь передач",
-    "transfers_queue_desc": "Загрузки и отправки безопасно распределены в фоновом режиме."
+    "transfers_queue_desc": "Загрузки и отправки безопасно распределены в фоновом режиме.",
+    "sort_by": "Сортировать по",
+    "empty_folder": "Эта папка пуста",
+    "empty_folder_desc": "Перетащите файлы сюда или нажмите кнопку ниже, чтобы загрузить файлы с компьютера.",
+    "upload_files": "Загрузить файлы",
+    "search_tip": "Подсказка: используйте {{shortcut}} для поиска",
+    "start_managing": "Загрузите файлы или синхронизируйте папки, чтобы начать управление контентом."
   },
   "archive": {
     "archive_viewer": "Просмотр архива",

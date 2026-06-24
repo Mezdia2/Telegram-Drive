@@ -38,12 +38,12 @@
     "size": "大小",
     "date": "日期",
     "play": "播放",
-    "start": "Start",
-    "settings": "Settings",
-    "light_mode": "Light Mode",
-    "dark_mode": "Dark Mode",
-    "switch_light": "Switch to Light Mode",
-    "switch_dark": "Switch to Dark Mode",
+    "start": "开始",
+    "settings": "设置",
+    "light_mode": "浅色模式",
+    "dark_mode": "深色模式",
+    "switch_light": "切换到浅色模式",
+    "switch_dark": "切换到深色模式",
     "files": "文件",
     "transfers": "传输"
   },
@@ -268,7 +268,13 @@
     "please_enter_url": "请输入 URL",
     "url_must_start": "URL 必须以 http:// 或 https:// 开头",
     "transfers_queue": "传输队列",
-    "transfers_queue_desc": "下载和上传在后台安全地排队与管理。"
+    "transfers_queue_desc": "下载和上传在后台安全地排队与管理。",
+    "sort_by": "排序方式",
+    "empty_folder": "此文件夹为空",
+    "empty_folder_desc": "将文件拖放到此处，或点击以下按钮从您的电脑上传。",
+    "upload_files": "上传文件",
+    "search_tip": "提示：使用 {{shortcut}} 进行搜索",
+    "start_managing": "上传文件或同步文件夹以开始管理内容。"
   },
   "archive": {
     "archive_viewer": "压缩包查看器",

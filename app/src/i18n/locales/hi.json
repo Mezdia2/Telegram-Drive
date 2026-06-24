@@ -38,12 +38,12 @@
     "size": "आकार",
     "date": "दिनांक",
     "play": "चलाएं",
-    "start": "Start",
-    "settings": "Settings",
-    "light_mode": "Light Mode",
-    "dark_mode": "Dark Mode",
-    "switch_light": "Switch to Light Mode",
-    "switch_dark": "Switch to Dark Mode",
+    "start": "शुरू करें",
+    "settings": "सेटिंग्स",
+    "light_mode": "लाइट मोड",
+    "dark_mode": "डार्क मोड",
+    "switch_light": "लाइट मोड में स्विच करें",
+    "switch_dark": "डार्क मोड में स्विच करें",
     "files": "फ़ाइलें",
     "transfers": "स्थानान्तरण"
   },
@@ -268,7 +268,13 @@
     "please_enter_url": "कृपया एक URL दर्ज करें",
     "url_must_start": "URL http:// या https:// से शुरू होना चाहिए",
     "transfers_queue": "स्थानांतरण कतार",
-    "transfers_queue_desc": "डाउनलोड और अपलोड पृष्ठभूमि में सुरक्षित रूप से कतारबद्ध हैं।"
+    "transfers_queue_desc": "डाउनलोड और अपलोड पृष्ठभूमि में सुरक्षित रूप से कतारबद्ध हैं।",
+    "sort_by": "इसके अनुसार क्रमबद्ध करें",
+    "empty_folder": "यह फ़ोल्डर खाली है",
+    "empty_folder_desc": "फाइलों को यहां खींचें और छोड़ें, या अपने कंप्यूटर से अपलोड करने के लिए नीचे दिए गए बटन पर क्लिक करें।",
+    "upload_files": "फ़ाइलें अपलोड करें",
+    "search_tip": "टिप: खोजने के लिए {{shortcut}} का उपयोग करें",
+    "start_managing": "सामग्री प्रबंधित करना शुरू करने के लिए फाइलें अपलोड करें या फ़ोल्डर्स सिंक्रनाइज़ करें।"
   },
   "archive": {
     "archive_viewer": "संग्रह व्यूअर",

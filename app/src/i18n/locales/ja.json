@@ -38,12 +38,12 @@
     "size": "サイズ",
     "date": "日付",
     "play": "再生",
-    "start": "Start",
-    "settings": "Settings",
-    "light_mode": "Light Mode",
-    "dark_mode": "Dark Mode",
-    "switch_light": "Switch to Light Mode",
-    "switch_dark": "Switch to Dark Mode",
+    "start": "開始",
+    "settings": "設定",
+    "light_mode": "ライトモード",
+    "dark_mode": "ダークモード",
+    "switch_light": "ライトモードに切り替え",
+    "switch_dark": "ダークモードに切り替え",
     "files": "ファイル",
     "transfers": "転送"
   },
@@ -268,7 +268,13 @@
     "please_enter_url": "URLを入力してください",
     "url_must_start": "URLは http:// または https:// で始まる必要があります",
     "transfers_queue": "転送キュー",
-    "transfers_queue_desc": "ダウンロードとアップロードはバックグラウンドで安全にキュー管理されています。"
+    "transfers_queue_desc": "ダウンロードとアップロードはバックグラウンドで安全にキュー管理されています。",
+    "sort_by": "並べ替え",
+    "empty_folder": "このフォルダは空です",
+    "empty_folder_desc": "ファイルをここにドラッグ＆ドロップするか、以下のボタンをクリックしてコンピュータからアップロードしてください。",
+    "upload_files": "ファイルをアップロード",
+    "search_tip": "ヒント: {{shortcut}} で検索",
+    "start_managing": "ファイルをアップロードするかフォルダを同期して、コンテンツ管理を始めます。"
   },
   "archive": {
     "archive_viewer": "アーカイブビューアー",

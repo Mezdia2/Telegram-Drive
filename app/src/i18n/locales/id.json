@@ -38,12 +38,12 @@
     "size": "Ukuran",
     "date": "Tanggal",
     "play": "Putar",
-    "start": "Start",
-    "settings": "Settings",
-    "light_mode": "Light Mode",
-    "dark_mode": "Dark Mode",
-    "switch_light": "Switch to Light Mode",
-    "switch_dark": "Switch to Dark Mode",
+    "start": "Mulai",
+    "settings": "Pengaturan",
+    "light_mode": "Mode Terang",
+    "dark_mode": "Mode Gelap",
+    "switch_light": "Beralih ke Mode Terang",
+    "switch_dark": "Beralih ke Mode Gelap",
     "files": "File",
     "transfers": "Transfer"
   },
@@ -268,7 +268,13 @@
     "please_enter_url": "Silakan masukkan URL",
     "url_must_start": "URL harus dimulai dengan http:// atau https://",
     "transfers_queue": "Antrean Transfer",
-    "transfers_queue_desc": "Unduhan dan unggahan diantrekan secara aman di latar belakang."
+    "transfers_queue_desc": "Unduhan dan unggahan diantrekan secara aman di latar belakang.",
+    "sort_by": "Urutkan berdasarkan",
+    "empty_folder": "Folder ini kosong",
+    "empty_folder_desc": "Seret dan letakkan file di sini, atau klik tombol di bawah untuk mengunggah dari komputer Anda.",
+    "upload_files": "Unggah File",
+    "search_tip": "Tip: Gunakan {{shortcut}} untuk mencari",
+    "start_managing": "Unggah file atau sinkronkan folder untuk mulai mengelola konten."
   },
   "archive": {
     "archive_viewer": "Penampil Arsip",

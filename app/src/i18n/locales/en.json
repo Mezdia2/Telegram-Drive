@@ -268,7 +268,13 @@
     "please_enter_url": "Please enter a URL",
     "url_must_start": "URL must start with http:// or https://",
     "transfers_queue": "Transfers Queue",
-    "transfers_queue_desc": "Downloads and uploads are safely queued and managed in the background."
+    "transfers_queue_desc": "Downloads and uploads are safely queued and managed in the background.",
+    "sort_by": "Sort by",
+    "empty_folder": "This folder is empty",
+    "empty_folder_desc": "Drag and drop files here, or click the button below to upload from your computer.",
+    "upload_files": "Upload Files",
+    "search_tip": "Tip: Use {{shortcut}} to search",
+    "start_managing": "Upload files or synchronise folders to begin managing content."
   },
   "archive": {
     "archive_viewer": "Archive Viewer",

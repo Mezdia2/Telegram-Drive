@@ -1,10 +1,14 @@
 import { Upload } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface EmptyStateProps {
     onUpload: () => void;
 }
 
 export function EmptyState({ onUpload }: EmptyStateProps) {
+    const { t } = useTranslation();
+    const isMac = navigator.platform.includes('Mac');
+    const shortcut = isMac ? 'Cmd + F' : 'Ctrl + F';
     return (
         <div className="atmosphere flex flex-col items-center justify-center py-20 px-8 text-center">
             <div className="glow-blue absolute top-0 left-1/2 -translate-x-1/2 w-[420px] h-[280px]" />
@@ -50,10 +54,10 @@ export function EmptyState({ onUpload }: EmptyStateProps) {
             </svg>
 
             <h3 className="font-display text-3xl text-telegram-text mb-3">
-                This folder is empty
+                {t('files.empty_folder')}
             </h3>
             <p className="text-telegram-subtext text-sm mb-6 max-w-xs">
-                Drag and drop files here, or click the button below to upload from your computer.
+                {t('files.empty_folder_desc')}
             </p>
 
             <button
@@ -61,11 +65,11 @@ export function EmptyState({ onUpload }: EmptyStateProps) {
                 className="inline-flex items-center gap-2 px-6 py-3 bg-telegram-primary font-medium rounded-lg hover:bg-telegram-primary-hover transition-all"
             >
                 <Upload className="w-5 h-5" />
-                Upload Files
+                {t('files.upload_files')}
             </button>
 
             <p className="text-xs text-telegram-subtext/50 mt-6">
-                Tip: Use <kbd className="px-1.5 py-0.5 bg-telegram-hover rounded text-telegram-subtext">Cmd + F</kbd> to search
+                {t('files.search_tip', { shortcut })}
             </p>
         </div>
     );

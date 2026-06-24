@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { DownloadCloud, Trash2, Pencil, CheckSquare, X, Check, FolderInput, MoreVertical, Eye, Link, Copy } from 'lucide-react';
 import { FileTypeIcon } from '../shared/FileTypeIcon';
 import { ActionPopover, ActionItem } from './ActionPopover';
@@ -26,6 +27,7 @@ interface TouchFileListProps {
 }
 
 export function TouchFileList({ files, isLoading, onDownload, onDelete, onPreview, onRename, selectedIds, onToggleSelection, onSelectAll, onClearSelection, onBulkDelete, onBulkDownload, onBulkMove, onBulkShare, onShare, onCopyTelegramLink, folders, activeFolderId }: TouchFileListProps) {
+  const { t } = useTranslation();
   const [selectionMode, setSelectionMode] = useState(false);
   const [showMovePicker, setShowMovePicker] = useState(false);
   const [actionMenuFile, setActionMenuFile] = useState<TelegramFile | null>(null);
@@ -131,9 +133,9 @@ export function TouchFileList({ files, isLoading, onDownload, onDelete, onPrevie
           <div className="p-4 rounded-2xl bg-telegram-hover/10 text-telegram-subtext border border-telegram-border/10">
             📁
           </div>
-          <h4 className="text-sm font-bold text-telegram-text">This folder is empty</h4>
+          <h4 className="text-sm font-bold text-telegram-text">{t('files.empty_folder')}</h4>
           <p className="text-xs text-telegram-subtext max-w-xs leading-relaxed">
-            Upload files or synchronise folders to begin managing content.
+            {t('files.start_managing')}
           </p>
         </div>
       )}
